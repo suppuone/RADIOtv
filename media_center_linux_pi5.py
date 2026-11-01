@@ -184,12 +184,18 @@ class SurakMediaCenterPi5(tk.Tk):
 
             replaced = []
             try:
-                for name in UPDATE_FILES:
+                # Only replace files that were actually downloaded into the
+                # staging folder. A favorites-only sync has no app files there.
+                for name in files_to_fetch:
                     destination = app_dir / name
                     backup = backup_dir / name
                     if destination.exists():
                         shutil.copy2(destination, backup)
-                    os.replace(staged_dir / name, destination)
+                    staged_file = staged_dir / name
+                    if not staged_file.is_file():
+                        raise FileNotFoundError(
+                            f"The downloaded update is missing {name}. Please retry.")
+                    os.replace(staged_file, destination)
                     replaced.append(name)
                 marker_temp = staging_root / "version"
                 marker_temp.write_text(commit + "\n", encoding="ascii")
