@@ -15,7 +15,9 @@ import xml.etree.ElementTree as ET
 import html
 import re
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+from PIL import Image, ImageDraw, ImageFilter, ImageTk
 
 from radio_app import WorldRadio, api_get, station_id, PAGE_SIZE
 
@@ -27,7 +29,43 @@ IPRD_CATALOG_URL = "https://iprd-org.github.io/iprd/site_data/metadata/catalog.j
 VERIFIED_RAW_BASE = "https://raw.githubusercontent.com/eyalev/verified-radio-streams/main"
 VERIFIED_INDEX_URL = VERIFIED_RAW_BASE + "/stations/index.json"
 VERIFIED_ALL_M3U_URL = VERIFIED_RAW_BASE + "/m3u/all.m3u"
-RADIO_SOURCES = ("Radio Browser", "IPRD", "Verified Radio")
+RADIO_SOURCES = ("Radio Browser", "IPRD", "Verified Radio", "Akashvani", "BBC", "Mediacorp", "SouthRadios")
+SOUTHRADIOS_STATION_NAMES = (
+    "Ajith Radio", "Vijay Radio", "Thala Thalapathy Radio", "Tamil Pop Radio",
+    "Ilayamaan Radio", "Ilayamaan Lite Radio", "K J Yesudas Radio", "Anirudh Radio",
+    "Yuvan Shankar Raja Radio", "D Imman Radio", "Harris Jayaraj Radio", "Tamil Lite Radio",
+)
+AKASHVANI_STATIONS_URL = "https://raw.githubusercontent.com/codito/akashvani/master/stations.json"
+BBC_STATIONS = (
+    ("BBC Radio 1", "bbc_radio_one", "https://as-hls-ww-live.akamaized.net/pool_01505109/live/ww/bbc_radio_one/bbc_radio_one.isml/bbc_radio_one-audio=96000.norewind.m3u8", "Pop"),
+    ("BBC Radio 1Xtra", "bbc_1xtra", "https://as-hls-ww-live.akamaized.net/pool_92079267/live/ww/bbc_1xtra/bbc_1xtra.isml/bbc_1xtra-audio=96000.norewind.m3u8", "Urban music"),
+    ("BBC Radio 2", "bbc_radio_two", "https://as-hls-ww-live.akamaized.net/pool_74208725/live/ww/bbc_radio_two/bbc_radio_two.isml/bbc_radio_two-audio=96000.norewind.m3u8", "Music"),
+    ("BBC Radio 3", "bbc_radio_three", "https://as-hls-ww-live.akamaized.net/pool_23461179/live/ww/bbc_radio_three/bbc_radio_three.isml/bbc_radio_three-audio=96000.norewind.m3u8", "Classical"),
+    ("BBC Radio 4", "bbc_radio_fourfm", "https://as-hls-ww-live.akamaized.net/pool_55057080/live/ww/bbc_radio_fourfm/bbc_radio_fourfm.isml/bbc_radio_fourfm-audio=96000.norewind.m3u8", "News and speech"),
+    ("BBC Radio 4 Extra", "bbc_radio_four_extra", "https://as-hls-ww-live.akamaized.net/pool_26173715/live/ww/bbc_radio_four_extra/bbc_radio_four_extra.isml/bbc_radio_four_extra-audio=96000.norewind.m3u8", "Comedy and drama"),
+    ("BBC Radio 5 Live", "bbc_radio_five_live", "https://as-hls-ww-live.akamaized.net/pool_89021708/live/ww/bbc_radio_five_live/bbc_radio_five_live.isml/bbc_radio_five_live-audio=96000.norewind.m3u8", "News and sport"),
+    ("BBC Radio 6 Music", "bbc_6music", "https://as-hls-ww-live.akamaized.net/pool_81827798/live/ww/bbc_6music/bbc_6music.isml/bbc_6music-audio=96000.norewind.m3u8", "Alternative music"),
+    ("BBC Asian Network", "bbc_asian_network", "https://as-hls-ww-live.akamaized.net/pool_22108647/live/ww/bbc_asian_network/bbc_asian_network.isml/bbc_asian_network-audio=96000.norewind.m3u8", "Asian music and speech"),
+    ("BBC World Service", "bbc_world_service", "https://as-hls-ww-live.akamaized.net/pool_87948813/live/ww/bbc_world_service/bbc_world_service.isml/bbc_world_service-audio=96000.norewind.m3u8", "World news"),
+    ("BBC Radio Scotland", "bbc_radio_scotland_fm", "https://as-hls-ww-live.akamaized.net/pool_43322914/live/ww/bbc_radio_scotland_fm/bbc_radio_scotland_fm.isml/bbc_radio_scotland_fm-audio=96000.norewind.m3u8", "Scotland"),
+    ("BBC Radio Wales", "bbc_radio_wales_fm", "https://as-hls-ww-live.akamaized.net/pool_97517794/live/ww/bbc_radio_wales_fm/bbc_radio_wales_fm.isml/bbc_radio_wales_fm-audio=96000.norewind.m3u8", "Wales"),
+    ("BBC Radio Ulster", "bbc_radio_ulster", "https://as-hls-ww-live.akamaized.net/pool_31244774/live/ww/bbc_radio_ulster/bbc_radio_ulster.isml/bbc_radio_ulster-audio=96000.norewind.m3u8", "Northern Ireland"),
+    ("BBC Radio Cymru", "bbc_radio_cymru", "https://as-hls-ww-live.akamaized.net/pool_24792333/live/ww/bbc_radio_cymru/bbc_radio_cymru.isml/bbc_radio_cymru-audio=96000.norewind.m3u8", "Welsh language"),
+)
+MEDIACORP_STATIONS = (
+    ("CLASS 95", "CLASS95AAC", "English · Pop"),
+    ("GOLD 905", "GOLD905AAC", "English · Classic hits"),
+    ("987", "987FMAAC", "English · Pop"),
+    ("CNA938", "938NOWAAC", "English · News and talk"),
+    ("Symphony 924", "SYMPHONY924AAC", "English · Classical"),
+    ("YES 933", "YES933AAC", "Mandarin · Pop"),
+    ("LOVE 972", "LOVE972FMAAC", "Mandarin · Music and lifestyle"),
+    ("CAPITAL 958", "CAPITAL958FMAAC", "Mandarin · News and infotainment"),
+    ("RIA 897", "RIA897FMAAC", "Malay · Music"),
+    ("WARNA 942", "WARNA942FMAAC", "Malay · News and infotainment"),
+    ("OLI 968", "OLI968FMAAC", "Tamil · News and entertainment"),
+    ("indiego", "INDIEGO_S01AAC_48", "English · Indie · Digital"),
+)
 NEWS_FEEDS = {
     "WORLD": "https://feeds.bbci.co.uk/news/world/rss.xml",
     "INDIA": "https://feeds.bbci.co.uk/news/world/asia/india/rss.xml",
@@ -52,17 +90,31 @@ class WorldRadioMap(WorldRadio):
     MUTED = "#91a6ad"
     GREEN = "#55d6b0"
 
+    def _button(self, parent, label, command, primary=False):
+        button = super()._button(parent, label, command, primary=primary)
+        button.configure(font=("Segoe UI", 12, "bold" if primary else "normal"))
+        return button
+
     def __init__(self, master=None):
         self._pi_lite = os.environ.get("SURAK_PI_LITE") == "1"
         self._ticker_interval = 110 if self._pi_lite else 45
-        self._wave_interval = 260 if self._pi_lite else 140
         self._meter_interval = 220 if self._pi_lite else 100
         self._data_poll_interval = 500 if self._pi_lite else 160
         self._radio_suspended = False
         self._radio_after_ids = set()
+        self.favorite_tuner_index = 0
+        self._panel_glow_job = None
+        self._panel_glow_photo = None
+        self._panel_glow_item = None
+        self._tuner_static_glow_photo = None
+        self._tuner_static_glow_item = None
         self._default_country_pending = True
         self.meter_phase = 0.0
         self.iprd_catalog = None
+        self.akashvani_catalog = None
+        self.bbc_catalog = None
+        self.mediacorp_catalog = None
+        self.southradios_catalog = None
         self.verified_country_cache = {}
         self.verified_all_cache = None
         self.country_shapes = []
@@ -70,8 +122,7 @@ class WorldRadioMap(WorldRadio):
         self.country_by_code = {}
         self.map_country_code = None
         self.map_country_name = None
-        self.wave_center = None
-        self.wave_phase = 0
+        self._map_drawn_selected_code = None
         self.weather_events = queue.Queue()
         self.news_events = queue.Queue()
         self.news_headlines = {}
@@ -94,8 +145,6 @@ class WorldRadioMap(WorldRadio):
             self.root.geometry("1240x790")
             self.root.minsize(960, 650)
         self.after(500, self._tick_clock)
-        if not self._pi_lite:
-            self.after(self._wave_interval, self._animate_waves)
         self.after(self._data_poll_interval, self._drain_weather_events)
         self.after(self._data_poll_interval, self._drain_news_events)
         self.after(450, self._load_news_feeds)
@@ -103,6 +152,104 @@ class WorldRadioMap(WorldRadio):
             self.after(self._ticker_interval, self._tick_weather_ticker)
             self.after(self._ticker_interval, self._tick_news_ticker)
             self.after(self._meter_interval, self._animate_audio_meter)
+
+    def _position_tuner(self, _event=None):
+        """Center the tuner card in its lane and redraw its vertical light rails."""
+        if not hasattr(self, "_tuner_window"):
+            return
+        canvas = self.tuner_stage
+        card = self.tuner_card
+        card.update_idletasks()
+        card_height = card.winfo_reqheight()
+        card_width = card.winfo_reqwidth()
+        stage_height = max(canvas.winfo_height(), card_height + 20)
+        top = max(10, (stage_height - card_height) // 2)
+        canvas.coords(self._tuner_window, canvas.winfo_width() / 2, top)
+        canvas.itemconfigure(self._tuner_window, width=min(card_width, 148))
+        self._schedule_panel_glows()
+
+    def _schedule_panel_glows(self, _event=None):
+        if self._panel_glow_job is not None:
+            try:
+                self.after_cancel(self._panel_glow_job)
+            except tk.TclError:
+                pass
+        self._panel_glow_job = self.after(100, self._draw_panel_glows)
+
+    def _draw_panel_glows(self):
+        self._panel_glow_job = None
+        if not hasattr(self, "panel_glow_canvas") or self._radio_suspended:
+            return
+        canvas = self.panel_glow_canvas
+        width, height = canvas.winfo_width(), canvas.winfo_height()
+        if width < 10 or height < 10:
+            return
+        scale = 0.5
+        glow = Image.new("RGBA", (max(1, round(width * scale)),
+                                  max(1, round(height * scale))), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(glow, "RGBA")
+        blocks = []
+        for widget, tint, top_blue_glow in (
+                (getattr(self, "map_panel", None), (80, 170, 255, 160), True),
+                (getattr(self, "tuner_stage", None), (145, 255, 180, 105), False),
+                (getattr(self, "station_panel", None), (80, 170, 255, 160), True)):
+            if widget is None:
+                continue
+            blocks.append((widget.winfo_x(), widget.winfo_y(),
+                           widget.winfo_x() + widget.winfo_width(),
+                           widget.winfo_y() + widget.winfo_height(), tint))
+        for x1, y1, x2, y2, tint in blocks:
+            x1, y1, x2, y2 = (value * scale for value in (x1, y1, x2, y2))
+            center_x = (x1 + x2) / 2
+            radius_x = max(24, (x2 - x1) * 0.48)
+            glow_y = y2 + 6
+            draw.ellipse((center_x - radius_x, glow_y - 22,
+                          center_x + radius_x, glow_y + 26),
+                         fill=tint)
+            if top_blue_glow:
+                top_y = y1 - 6
+                draw.ellipse((center_x - radius_x, top_y - 26,
+                              center_x + radius_x, top_y + 22),
+                             fill=tint)
+        soft = glow.filter(ImageFilter.GaussianBlur(18))
+        wide = glow.filter(ImageFilter.GaussianBlur(34))
+        glow = Image.alpha_composite(wide, soft).resize(
+            (width, height), Image.Resampling.LANCZOS)
+        self._panel_glow_photo = ImageTk.PhotoImage(glow)
+        if self._panel_glow_item is None:
+            self._panel_glow_item = canvas.create_image(
+                0, 0, image=self._panel_glow_photo, anchor="nw")
+        else:
+            canvas.itemconfigure(self._panel_glow_item, image=self._panel_glow_photo)
+        canvas.tag_lower(self._panel_glow_item)
+
+        # A separate diffuse mint halo sits behind the dark tuner card only.
+        tuner_canvas = self.tuner_stage
+        tuner_bbox = tuner_canvas.bbox(self._tuner_window)
+        if tuner_bbox:
+            tuner_width = max(1, round(tuner_canvas.winfo_width() * scale))
+            tuner_height = max(1, round(tuner_canvas.winfo_height() * scale))
+            tuner_glow = Image.new("RGBA", (tuner_width, tuner_height), (0, 0, 0, 0))
+            tuner_draw = ImageDraw.Draw(tuner_glow, "RGBA")
+            x1, y1, x2, y2 = (value * scale for value in tuner_bbox)
+            tuner_draw.rounded_rectangle(
+                (x1 - 10, y1 - 12, x2 + 10, y2 + 12), radius=24,
+                fill=(145, 255, 180, 82))
+            tuner_draw.rounded_rectangle(
+                (x1 - 24, y1 - 28, x2 + 24, y2 + 28), radius=34,
+                fill=(145, 255, 180, 45))
+            tuner_glow = tuner_glow.filter(ImageFilter.GaussianBlur(20)).resize(
+                (tuner_canvas.winfo_width(), tuner_canvas.winfo_height()),
+                Image.Resampling.LANCZOS)
+            self._tuner_static_glow_photo = ImageTk.PhotoImage(tuner_glow)
+            if self._tuner_static_glow_item is None:
+                self._tuner_static_glow_item = tuner_canvas.create_image(
+                    0, 0, image=self._tuner_static_glow_photo, anchor="nw")
+            else:
+                tuner_canvas.itemconfigure(
+                    self._tuner_static_glow_item, image=self._tuner_static_glow_photo)
+            tuner_canvas.tag_lower(self._tuner_static_glow_item, self._tuner_window)
+
 
     def after(self, ms, func=None, *args):
         """Track this view's Tk callbacks so mode switches can pause them all."""
@@ -148,8 +295,6 @@ class WorldRadioMap(WorldRadio):
         self.after(120, self._drain_events)
         self.after(100, self._poll_remote_controls)
         self.after(500, self._tick_clock)
-        if not self._pi_lite:
-            self.after(self._wave_interval, self._animate_waves)
         self.after(self._data_poll_interval, self._drain_weather_events)
         self.after(self._data_poll_interval, self._drain_news_events)
         if not self._pi_lite:
@@ -172,31 +317,134 @@ class WorldRadioMap(WorldRadio):
     def save_favorites(self):
         FAVORITES_FILE.write_text(json.dumps(self.favorites, ensure_ascii=False, indent=2), encoding="utf-8")
 
+    def _refresh_favorite_tuner(self):
+        if not hasattr(self, "favorite_tuner_scale"):
+            return
+        favorites = list(self.favorites.values())
+        count = len(favorites)
+        if count:
+            selected = self.selected_station() if hasattr(self, "_row_stations") else None
+            reference = selected or self.current
+            current_id = station_id(reference) if reference else None
+            favorite_ids = [station_id(station) for station in favorites]
+            if current_id in favorite_ids:
+                self.favorite_tuner_index = favorite_ids.index(current_id)
+            self.favorite_tuner_index = min(max(0, self.favorite_tuner_index), count - 1)
+            station = favorites[self.favorite_tuner_index]
+            self.favorite_tuner_scale.configure(from_=1, to=count, state="normal")
+            self.favorite_tuner_var.set(self.favorite_tuner_index + 1)
+            self.favorite_tuner_station.configure(text=station.get("name", "Radio station"))
+            self.favorite_tuner_position.configure(
+                text=f"{self.favorite_tuner_index + 1:02d} / {count:02d}")
+        else:
+            self.favorite_tuner_index = 0
+            self.favorite_tuner_scale.configure(from_=1, to=1, state="disabled")
+            self.favorite_tuner_var.set(1)
+            self.favorite_tuner_station.configure(text="No saved favourites")
+            self.favorite_tuner_position.configure(text="0 / 0")
+        self._draw_favorite_tuner_dial(count)
+
+    def _draw_favorite_tuner_dial(self, count):
+        canvas = self.favorite_tuner_canvas
+        canvas.delete("all")
+        width, center_y = 126, 25
+        canvas.create_line(8, center_y, width - 8, center_y, fill="#536873", width=2)
+        tick_count = min(max(count, 2), 15)
+        for tick in range(tick_count):
+            fraction = tick / max(1, tick_count - 1)
+            x = 9 + fraction * (width - 18)
+            long_tick = tick % 3 == 0
+            canvas.create_line(x, center_y - (10 if long_tick else 6), x,
+                               center_y + (10 if long_tick else 6),
+                               fill="#8da2a8" if long_tick else "#536873", width=1)
+        if count:
+            fraction = self.favorite_tuner_index / max(1, count - 1)
+            x = 9 + fraction * (width - 18)
+            canvas.create_polygon(x - 5, 4, x + 5, 4, x, 12,
+                                  fill="#f2c66d", outline="")
+            canvas.create_line(x, 11, x, 39, fill="#f2c66d", width=2)
+        canvas.create_oval(3, center_y - 2, 7, center_y + 2, fill="#d66a68", outline="")
+        canvas.create_oval(width - 7, center_y - 2, width - 3, center_y + 2,
+                           fill="#d66a68", outline="")
+
+    def _preview_favorite_tuner(self, value):
+        favorites = list(self.favorites.values())
+        if not favorites:
+            return
+        index = min(len(favorites) - 1, max(0, int(float(value)) - 1))
+        self.favorite_tuner_index = index
+        station = favorites[index]
+        self.favorite_tuner_station.configure(text=station.get("name", "Radio station"))
+        self.favorite_tuner_position.configure(text=f"{index + 1:02d} / {len(favorites):02d}")
+        self._draw_favorite_tuner_dial(len(favorites))
+
+    def _tune_favorite_tuner(self, _event=None):
+        favorites = list(self.favorites.values())
+        if not favorites:
+            self.set_status("Save stations as favourites to use the tuner")
+            return "break"
+        index = min(len(favorites) - 1, max(0, int(self.favorite_tuner_var.get()) - 1))
+        self.favorite_tuner_index = index
+        station = favorites[index]
+        station_key = station_id(station)
+        if station_key not in self._row_stations:
+            self.only_favorites = True
+            self.stations = favorites
+            self.render()
+        self._play_radio_station(station)
+        self.set_status(f"Favourite {index + 1} of {len(favorites)} · {station.get('name', 'Radio')}")
+        self._refresh_favorite_tuner()
+        return "break"
+
+    def _step_favorite_tuner(self, direction):
+        favorites = list(self.favorites.values())
+        if not favorites:
+            self.set_status("Save stations as favourites to use the tuner")
+            return
+        favorite_ids = [station_id(station) for station in favorites]
+        current_id = station_id(self.current) if self.current else None
+        if current_id in favorite_ids:
+            index = (favorite_ids.index(current_id) + direction) % len(favorites)
+        else:
+            index = 0 if direction > 0 else len(favorites) - 1
+        self.favorite_tuner_index = index
+        self.favorite_tuner_var.set(index + 1)
+        self._tune_favorite_tuner()
+
+    def toggle_favorite(self):
+        super().toggle_favorite()
+        self._refresh_favorite_tuner()
+
     def _build_ui(self):
-        header = tk.Frame(self, bg=self.BG)
-        header.pack(fill="x", padx=22, pady=(16, 10))
+        header = tk.Frame(self, bg=self.BG, height=42)
+        header.pack(fill="x", padx=22, pady=0)
+        header.pack_propagate(False)
         tk.Label(header, text="WORLD RADIO" if self._pi_lite else "◉  WORLD RADIO", bg=self.BG, fg=self.TEXT,
                  font=("DejaVu Sans", 16 if self._pi_lite else 21, "bold")).pack(side="left")
         tk.Label(header, text="CHOOSE A COUNTRY OR BROWSE WORLDWIDE" if self._pi_lite else "MAP EDITION  ·  CLICK A COUNTRY TO BROWSE", bg=self.BG,
-                 fg=self.MUTED, font=("Segoe UI", 9, "bold")).pack(side="right", pady=9)
-        self.clock_label = tk.Label(header, text="LOCAL  --:--", bg=self.BG, fg="#e6c77a",
-                                    font=("Consolas", 12, "bold"))
-        self.clock_label.pack(side="right", padx=18, pady=8)
+                 fg=self.MUTED, font=("Segoe UI", 11, "bold")).pack(side="right")
+        self.clock_label = tk.Label(header, text="LOCAL  --:--", bg="#17232d", fg="#e6c77a",
+                                    font=("Consolas", 14, "bold"))
+        self.clock_label.pack(side="right", padx=18, ipadx=10, ipady=5)
+        self.station_header_title = tk.Label(
+            self, text="Choose a station", bg=self.BG, fg="#f2c66d",
+            font=("Segoe UI", 36, "bold"), anchor="center", justify="center")
+        self.station_header_title.pack(fill="x", padx=20, pady=(0, 2), ipady=0)
 
         controls = tk.Frame(self, bg=self.PANEL, padx=12, pady=10)
         controls.pack(fill="x", padx=20)
         source_box = tk.Frame(controls, bg=self.PANEL)
         source_box.pack(side="right", padx=(8, 0))
         tk.Label(source_box, text="SOURCE", bg=self.PANEL, fg=self.MUTED,
-                 font=("Segoe UI", 8, "bold")).pack(side="left", padx=(0, 6))
+                 font=("Segoe UI", 10, "bold")).pack(side="left", padx=(0, 6))
         self.source_var = tk.StringVar(value=RADIO_SOURCES[0])
         self.source_picker = ttk.Combobox(source_box, textvariable=self.source_var,
-            values=RADIO_SOURCES, state="readonly", width=17)
+            values=RADIO_SOURCES, state="readonly", width=20)
         self.source_picker.pack(side="left")
         self.source_picker.bind("<<ComboboxSelected>>", self._source_changed)
         self.search = tk.StringVar()
         entry = tk.Entry(controls, textvariable=self.search, bg=self.PANEL2, fg=self.TEXT,
-                         insertbackground=self.TEXT, relief="flat", font=("Segoe UI", 10))
+                         insertbackground=self.TEXT, relief="flat", font=("Segoe UI", 12))
         entry.pack(side="left", fill="x", expand=True, ipady=8, padx=(0, 7))
         entry.insert(0, "Search all stations…")
         entry.bind("<FocusIn>", lambda _e: self._clear_placeholder(entry))
@@ -207,12 +455,17 @@ class WorldRadioMap(WorldRadio):
 
         content = tk.Frame(self, bg=self.BG)
         content.pack(fill="both", expand=True, padx=20, pady=(12, 10))
+        self.panel_glow_canvas = tk.Canvas(content, bg=self.BG,
+                                           highlightthickness=0, bd=0)
+        self.panel_glow_canvas.place(x=0, y=0, relwidth=1, relheight=1)
         left = tk.Frame(content, bg=self.PANEL, padx=12, pady=10)
-        left.pack(side="left", fill="both", expand=True, padx=(0, 8))
+        self.map_panel = left
+        left.pack(side="left", fill="both", expand=True, padx=(0, 8), pady=(18, 18))
         top = tk.Frame(left, bg=self.PANEL)
         top.pack(fill="x", pady=(0, 7))
-        self.map_caption = tk.Label(top, text="COUNTRY  ·  Select a country" if self._pi_lite else "WORLD MAP  ·  Select a country", bg=self.PANEL,
-                                    fg=self.TEXT, font=("Segoe UI", 10, "bold"))
+        self.map_caption = tk.Label(top, text="COUNTRY MAP" if self._pi_lite else "WORLD MAP  ·  STATION ORIGIN",
+                                    bg=self.PANEL, fg=self.TEXT, font=("Segoe UI", 12, "bold"),
+                                    width=25, anchor="w")
         self.map_caption.pack(side="left")
         self.country_choice = tk.StringVar(value="Choose a country…")
         self.country_picker = ttk.Combobox(top, textvariable=self.country_choice, state="readonly", width=25)
@@ -220,55 +473,109 @@ class WorldRadioMap(WorldRadio):
         self.country_picker.bind("<<ComboboxSelected>>", self._country_picker_selected)
         self._button(top, "Clear", self.clear_map_selection).pack(side="right")
         if self._pi_lite:
-            self.country_clock_label = tk.Label(
+            self.map_help_label = tk.Label(
                 left, text="Choose a country to list its stations", bg=self.PANEL,
-                fg=self.MUTED, font=("DejaVu Sans", 11), anchor="center")
-            self.country_clock_label.pack(fill="both", expand=True, padx=20, pady=20)
+                fg=self.MUTED, font=("DejaVu Sans", 14), anchor="center")
+            self.map_help_label.pack(fill="both", expand=True, padx=20, pady=20)
         else:
             self.map_canvas = tk.Canvas(left, bg="#0e1822", highlightthickness=0, cursor="hand2")
             self.map_canvas.pack(fill="both", expand=True)
-            self.map_canvas.bind("<Configure>", lambda _e: self.draw_map())
-            self.clock_overlay = tk.Frame(left, bg="#10202c", padx=6, pady=6,
-                                          highlightthickness=1, highlightbackground="#4c8da0")
-            self.clock_overlay.place(relx=0.12, rely=0.80, anchor="center", width=132, height=165)
-            tk.Label(self.clock_overlay, text="COUNTRY TIME", bg="#10202c", fg="#80d7e8",
-                     font=("Segoe UI", 8, "bold")).pack(pady=(0, 2))
-            self.clock_canvas = tk.Canvas(self.clock_overlay, width=112, height=112,
-                                          bg="#10202c", highlightthickness=0)
-            self.clock_canvas.pack()
-            self.country_clock_label = tk.Label(self.clock_overlay, text="Select a country",
-                                                bg="#10202c", fg="#e6c77a",
-                                                font=("Segoe UI", 8, "bold"))
-            self.country_clock_label.pack(pady=(1, 0))
+            self._map_draw_size = None
+            self._map_redraw_job = None
+            self.map_canvas.bind("<Configure>", self._map_canvas_configured)
         self._load_map_data()
 
-        right = tk.Frame(content, bg=self.PANEL, padx=10, pady=10, width=470)
-        right.pack(side="right", fill="both", expand=True, padx=(8, 0))
+        # Keep the tuner centered between the map and station panels.
+        self.tuner_stage = tk.Canvas(content, bg=self.BG, width=168,
+                                     highlightthickness=0, bd=0)
+        self.tuner_stage.pack(side="left", fill="y", padx=(0, 8), pady=(18, 18))
+        tuner = tk.Frame(self.tuner_stage, bg="#17232d", padx=9, pady=12, width=148,
+                         highlightthickness=0)
+        self.tuner_card = tuner
+        tuner.pack_propagate(True)
+        self._tuner_window = self.tuner_stage.create_window(
+            84, 0, window=tuner, anchor="n", width=148)
+        self.tuner_stage.bind("<Configure>", self._position_tuner)
+        tk.Label(tuner, text="FAVOURITE", bg="#17232d", fg="#9eb4bc",
+                 font=("Segoe UI", 10, "bold")).pack(pady=(2, 0))
+        tk.Label(tuner, text="TUNER", bg="#17232d", fg="#f2c66d",
+                 font=("Segoe UI", 15, "bold")).pack(pady=(0, 8))
+        self.favorite_tuner_canvas = tk.Canvas(
+            tuner, width=126, height=44, bg="#0e1822", highlightthickness=0)
+        self.favorite_tuner_canvas.pack(fill="x", pady=(0, 9))
+        self.clock_overlay = tk.Frame(tuner, bg="#0e1720", padx=3, pady=3,
+                                      height=138, highlightthickness=0)
+        self.clock_overlay.pack(fill="x", pady=(0, 8))
+        self.clock_overlay.pack_propagate(False)
+        tk.Label(self.clock_overlay, text="LOCAL TIME", bg="#0e1720", fg="#8da8b5",
+                 font=("Segoe UI", 10, "bold")).pack(pady=(0, 1))
+        self.clock_canvas = tk.Canvas(self.clock_overlay, width=90, height=90,
+                                      bg="#0e1720", highlightthickness=0)
+        self.clock_canvas.pack()
+        self.country_clock_label = tk.Label(
+            self.clock_overlay, text="LOCAL TIME", bg="#0e1720", fg="#f2c66d",
+            font=("Segoe UI", 10, "bold"), wraplength=120, height=2, justify="center")
+        self.country_clock_label.pack(fill="x", pady=(0, 1))
+        self.favorite_tuner_station = tk.Label(
+            tuner, text="No saved favourites", bg="#17232d", fg=self.TEXT,
+            font=("Segoe UI", 11, "bold"), wraplength=126, justify="center", height=3)
+        self.favorite_tuner_station.pack(fill="x", pady=(0, 5))
+        self.favorite_tuner_position = tk.Label(
+            tuner, text="0 / 0", bg="#17232d", fg="#75d6c1",
+            font=("Consolas", 12, "bold"))
+        self.favorite_tuner_position.pack(pady=(0, 3))
+        self.favorite_tuner_var = tk.IntVar(value=1)
+        self.favorite_tuner_scale = tk.Scale(
+            tuner, from_=1, to=1, orient="horizontal", variable=self.favorite_tuner_var,
+            showvalue=False, resolution=1, length=126, width=6, sliderlength=17,
+            bd=0, highlightthickness=0, relief="flat", bg="#17232d", fg=self.TEXT,
+            troughcolor="#40535d", activebackground="#f2c66d",
+            command=self._preview_favorite_tuner)
+        self.favorite_tuner_scale.pack(fill="x", pady=(0, 9))
+        self.favorite_tuner_scale.bind("<ButtonRelease-1>", self._tune_favorite_tuner)
+        self.favorite_tuner_scale.bind("<KeyRelease>", self._tune_favorite_tuner)
+        tune_buttons = tk.Frame(tuner, bg="#17232d")
+        tune_buttons.pack(side="bottom", fill="x", pady=(8, 2))
+        self._button(tune_buttons, "◀", lambda: self._step_favorite_tuner(-1)).pack(
+            side="left", fill="x", expand=True, padx=(0, 3))
+        self._button(tune_buttons, "▶", lambda: self._step_favorite_tuner(1),
+                     primary=True).pack(side="left", fill="x", expand=True, padx=(3, 0))
+        if not self._pi_lite:
+            self.analog_audio_meter = tk.Canvas(
+                tuner, width=126, height=100, bg="#17232d", highlightthickness=0)
+            self.analog_audio_meter.pack(side="bottom", fill="x", pady=(4, 8))
+
+        station_bg = "#101821"
+        station_header_bg = "#1a2732"
+        right = tk.Frame(content, bg=station_bg, padx=10, pady=10, width=470,
+                         bd=0, relief="flat", highlightthickness=0)
+        self.station_panel = right
+        right.pack(side="right", fill="both", expand=True, padx=(8, 0), pady=(18, 18))
         right.pack_propagate(False)
-        row = tk.Frame(right, bg=self.PANEL)
+        row = tk.Frame(right, bg=station_bg, bd=0, highlightthickness=0)
         row.pack(fill="x", pady=(0, 8))
-        tk.Label(row, text="STATIONS", bg=self.PANEL, fg=self.TEXT,
-                 font=("Segoe UI", 10, "bold")).pack(side="left")
-        self.count_label = tk.Label(row, text="Connecting…", bg=self.PANEL, fg=self.MUTED,
-                                    font=("Segoe UI", 8))
+        tk.Label(row, text="STATIONS", bg=station_bg, fg=self.TEXT,
+                 font=("Segoe UI", 12, "bold")).pack(side="left")
+        self.count_label = tk.Label(row, text="Connecting…", bg=station_bg, fg=self.MUTED,
+                                    font=("Segoe UI", 10))
         self.count_label.pack(side="right")
         self.weather_card = tk.Frame(right, bg="#1a2b32", padx=11, pady=8,
-                                     highlightthickness=1, highlightbackground="#2e5960")
+                                     bd=0, relief="flat", highlightthickness=0)
         self.weather_card.pack(fill="x", pady=(0, 8))
         self.weather_icon = tk.Label(self.weather_card, text="" if self._pi_lite else "◌", bg="#1a2b32", fg="#70d9ce",
-                                     font=("DejaVu Sans", 11 if self._pi_lite else 23, "bold"), width=1 if self._pi_lite else 2)
+                                     font=("DejaVu Sans", 13 if self._pi_lite else 23, "bold"), width=1 if self._pi_lite else 2)
         if not self._pi_lite:
             self.weather_icon.pack(side="left", padx=(0, 8))
         weather_text = tk.Frame(self.weather_card, bg="#1a2b32")
         weather_text.pack(side="left", fill="x", expand=True)
         self.weather_title = tk.Label(weather_text, text="COUNTRY WEATHER", bg="#1a2b32",
-                                      fg="#a8ded6", font=("Segoe UI", 8, "bold"), anchor="w")
+                                      fg="#a8ded6", font=("Segoe UI", 10, "bold"), anchor="w")
         self.weather_title.pack(anchor="w")
         self.weather_detail = tk.Label(weather_text, text="Select a country for current conditions",
-                                       bg="#1a2b32", fg=self.TEXT, font=("Segoe UI", 10), anchor="w", justify="left")
+                                       bg="#1a2b32", fg=self.TEXT, font=("Segoe UI", 12), anchor="w", justify="left")
         self.weather_detail.pack(anchor="w", pady=(2, 0))
         self.weather_source = tk.Label(weather_text, text="Open-Meteo · representative location",
-                                       bg="#1a2b32", fg=self.MUTED, font=("Segoe UI", 7), anchor="w")
+                                       bg="#1a2b32", fg=self.MUTED, font=("Segoe UI", 10), anchor="w")
         self.weather_source.pack(anchor="w", pady=(2, 0))
         self.weather_metrics = {}
         if not self._pi_lite:
@@ -281,9 +588,9 @@ class WorldRadioMap(WorldRadio):
                 tile = tk.Frame(metric_row, bg="#223b46", padx=7, pady=4)
                 tile.pack(side="left", fill="x", expand=True, padx=(0, 5))
                 tk.Label(tile, text=caption, bg="#223b46", fg="#9bb3bd",
-                         font=("Segoe UI", 7, "bold")).pack(anchor="w")
+                         font=("Segoe UI", 10, "bold")).pack(anchor="w")
                 value = tk.Label(tile, text="—", bg="#223b46", fg=color,
-                                 font=("Segoe UI", 10, "bold"))
+                                 font=("Segoe UI", 12, "bold"))
                 value.pack(anchor="w")
                 self.weather_metrics[key] = value
         if not self._pi_lite:
@@ -293,34 +600,57 @@ class WorldRadioMap(WorldRadio):
             self.weather_ticker.bind("<Configure>", self._reset_weather_ticker)
             self.weather_ticker_item = self.weather_ticker.create_text(
                 8, 12, text=self.weather_ticker_message, anchor="w",
-                fill="#a9e6dd", font=("Segoe UI", 8, "bold"))
+                fill="#a9e6dd", font=("Segoe UI", 12, "bold"))
         columns = ("name", "genre", "bitrate")
-        self.table = ttk.Treeview(right, columns=columns, show="headings", selectmode="browse")
+        station_style = ttk.Style(self)
+        station_style.configure(
+            "RadioStations.Treeview", background=station_bg, foreground=self.TEXT,
+            fieldbackground=station_bg, font=("Segoe UI", 18), rowheight=48,
+            borderwidth=0, relief="flat", bordercolor=station_bg,
+            lightcolor=station_bg, darkcolor=station_bg)
+        station_style.configure(
+            "RadioStations.Treeview.Heading", background=station_header_bg,
+            foreground=self.MUTED, font=("Segoe UI", 12, "bold"),
+            relief="flat", borderwidth=0)
+        station_style.map("RadioStations.Treeview",
+                          background=[("selected", "#28543f")],
+                          foreground=[("selected", "white")])
+        station_style.layout("RadioStations.Treeview", [
+            ("Treeview.treearea", {"sticky": "nswe"}),
+        ])
+        self.table = ttk.Treeview(
+            right, columns=columns, show="headings", selectmode="browse",
+            style="RadioStations.Treeview", takefocus=True)
         for key, title in (("name", "STATION"), ("genre", "GENRE"), ("bitrate", "KBPS")):
             self.table.heading(key, text=title)
-        self.table.column("name", width=210, minwidth=120)
-        self.table.column("genre", width=150, minwidth=80)
+        self.table.column("name", width=260, minwidth=170)
+        self.table.column("genre", width=105, minwidth=70)
         self.table.column("bitrate", width=55, minwidth=45, anchor="center")
         scroll = ttk.Scrollbar(right, orient="vertical", command=self.table.yview)
         self.table.configure(yscrollcommand=scroll.set)
         self.table.pack(side="left", fill="both", expand=True)
         scroll.pack(side="right", fill="y")
+        self.table.bind("<<TreeviewSelect>>", self._station_list_selected)
         self.table.bind("<Double-1>", lambda _e: self.play_selected())
         self.table.bind("<Return>", lambda _e: self.play_selected())
         self.table.bind("<space>", lambda _e: self.play_selected())
+        self._refresh_favorite_tuner()
+        self.after(80, self._position_tuner)
+        content.bind("<Configure>", self._schedule_panel_glows)
+        self.after(140, self._draw_panel_glows)
 
         news_bar = tk.Frame(self, bg="#131e29", padx=10, pady=7,
-                            highlightthickness=1, highlightbackground="#293d4b")
+                            highlightthickness=0)
         news_tabs = tk.Frame(news_bar, bg="#131e29")
         news_tabs.pack(side="left", padx=(0, 10))
         tk.Label(news_tabs, text="NEWS", bg="#131e29", fg="#f2bd55",
-                 font=("Segoe UI", 8, "bold")).pack(side="left", padx=(0, 6))
+                 font=("Segoe UI", 10, "bold")).pack(side="left", padx=(0, 6))
         self.news_buttons = {}
         for section in NEWS_SECTIONS:
             button = tk.Button(news_tabs, text=section, command=lambda name=section: self._select_news_section(name),
                                bg="#293a49", fg=self.TEXT, activebackground="#365166",
                                activeforeground=self.TEXT, relief="flat", bd=0, cursor="hand2",
-                               padx=9, pady=4, font=("Segoe UI", 8, "bold"))
+                               padx=9, pady=4, font=("Segoe UI", 10, "bold"))
             button.pack(side="left", padx=2)
             self.news_buttons[section] = button
         self.region_choice = tk.StringVar(value="All States & UTs")
@@ -332,7 +662,7 @@ class WorldRadioMap(WorldRadio):
         if self._pi_lite:
             self.news_ticker = tk.Label(news_bar, text=self.news_ticker_message, anchor="w",
                                         bg="#131e29", fg=self.TEXT,
-                                        font=("DejaVu Sans", 10, "bold"), wraplength=800)
+                                        font=("DejaVu Sans", 12, "bold"), wraplength=800)
         else:
             self.news_ticker = tk.Canvas(news_bar, height=48, bg="#0e1822", highlightthickness=0)
             self.news_ticker.bind("<Configure>", self._reset_news_ticker)
@@ -346,11 +676,19 @@ class WorldRadioMap(WorldRadio):
         foot.pack(fill="x", side="bottom")
         now = tk.Frame(foot, bg=self.PANEL)
         now.pack(side="left", fill="x", expand=True)
-        self.now_title = tk.Label(now, text="Choose a station to start listening", bg=self.PANEL,
-                                  fg=self.TEXT, font=("Segoe UI", 10, "bold"), anchor="w")
-        self.now_title.pack(anchor="w")
+        now_heading = tk.Frame(now, bg=self.PANEL)
+        now_heading.pack(fill="x")
+        self.now_title = tk.Label(now_heading, text="Choose a station to start listening", bg=self.PANEL,
+                                  fg=self.TEXT, font=("Segoe UI", 22, "bold"), anchor="w")
+        self.now_title.pack(side="left", anchor="w")
+        if not self._pi_lite:
+            self.audio_meter = tk.Canvas(now_heading, width=150, height=42, bg=self.PANEL,
+                                         highlightthickness=0)
+            self.audio_meter.pack(side="left", padx=(16, 12))
+            self.audio_meter.create_text(2, 2, text="AUDIO", anchor="nw", fill=self.MUTED,
+                                         font=("Segoe UI", 11, "bold"), tags="meter-label")
         self.status = tk.Label(now, text="Directory powered by Radio Browser", bg=self.PANEL,
-                               fg=self.MUTED, font=("Segoe UI", 8), anchor="w")
+                               fg=self.MUTED, font=("Segoe UI", 12), anchor="w")
         self.status.pack(anchor="w", pady=(2, 0))
         actions = tk.Frame(foot, bg=self.PANEL)
         actions.pack(side="left", padx=10)
@@ -358,19 +696,13 @@ class WorldRadioMap(WorldRadio):
         self._button(actions, "Ⅱ", self.pause).pack(side="left", padx=2)
         self._button(actions, "■", self.stop).pack(side="left", padx=2)
         self._button(actions, "♥", self.toggle_favorite).pack(side="left", padx=2)
-        if not self._pi_lite:
-            self.audio_meter = tk.Canvas(now, width=150, height=30, bg=self.PANEL,
-                                         highlightthickness=0)
-            self.audio_meter.pack(side="right", padx=(8, 12))
-            self.audio_meter.create_text(2, 2, text="AUDIO", anchor="nw", fill=self.MUTED,
-                                         font=("Segoe UI", 7, "bold"), tags="meter-label")
         vol = tk.Frame(foot, bg=self.PANEL)
         vol.configure(width=300, height=34)
         vol.pack(side="right", padx=(8, 0))
         vol.pack_propagate(False)
         self.volume = tk.IntVar(value=75)
         tk.Label(vol, text="VOL", bg=self.PANEL, fg=self.MUTED,
-                 font=("Segoe UI", 8, "bold")).pack(side="left", padx=(2, 7))
+                 font=("Segoe UI", 12, "bold")).pack(side="left", padx=(2, 7))
         self.volume_scale = tk.Scale(vol, from_=0, to=100, orient="horizontal",
             variable=self.volume, showvalue=False, resolution=1, length=205, width=5,
             sliderlength=15, bd=0, highlightthickness=0, relief="flat",
@@ -378,7 +710,7 @@ class WorldRadioMap(WorldRadio):
             activebackground="#79e1c2", command=self.set_volume)
         self.volume_scale.pack(side="left", fill="x", expand=True, padx=(0, 7))
         self.volume_bubble = tk.Label(vol, text="75%", width=4, bg="#293a49", fg=self.TEXT,
-            font=("Segoe UI", 8, "bold"), padx=4, pady=3)
+            font=("Segoe UI", 12, "bold"), padx=4, pady=3)
         self.volume_bubble.pack(side="right", padx=(0, 2))
         self._button(foot, "＋ Stream URL", self.add_stream_url).pack(side="right", padx=6)
         self._button(foot, "Load more", self.load_more).pack(side="right", padx=3)
@@ -424,7 +756,12 @@ class WorldRadioMap(WorldRadio):
         canvas.delete("mapshape")
         width, height = max(canvas.winfo_width(), 200), max(canvas.winfo_height(), 150)
         pad = 8
-        map_w, map_h = width - pad * 2, height - pad * 2
+        # Use one geographic scale on both axes. The projection is stable and
+        # the continents cannot stretch or jump when the canvas is resized.
+        scale = min((width - pad * 2) / 360.0, (height - pad * 2) / 164.0)
+        map_w, map_h = 360.0 * scale, 164.0 * scale
+        offset_x = (width - map_w) / 2
+        offset_y = (height - map_h) / 2
         for feature in self.country_shapes:
             props = feature.get("properties", {})
             name = props.get("ADMIN") or props.get("NAME") or ""
@@ -448,12 +785,73 @@ class WorldRadioMap(WorldRadio):
                         if len(points) >= 6:
                             self._draw_country_piece(points, name, code, fill, outline)
                         points = []
-                    x = pad + (lon + 180) / 360 * map_w
-                    y = pad + (82 - lat) / 164 * map_h
+                    x = offset_x + (lon + 180) * scale
+                    y = offset_y + (82 - lat) * scale
                     points.extend((x, y))
                     last_lon = lon
                 if len(points) >= 6:
                     self._draw_country_piece(points, name, code, fill, outline)
+        # The bundled low-detail geography omits Singapore as a polygon. Keep
+        # a small, unlabeled marker at its true position so selection highlights
+        # remain visible without shifting or rebuilding the rest of the map.
+        singapore = self.country_by_code.get("SG")
+        singapore_props = singapore.get("properties", {}) if singapore else {}
+        try:
+            sg_lon = float(singapore_props.get("LABEL_X", 103.8198))
+            sg_lat = float(singapore_props.get("LABEL_Y", 1.3521))
+            sg_x = offset_x + (sg_lon + 180) * scale
+            sg_y = offset_y + (82 - sg_lat) * scale
+            sg_selected = str(self.map_country_code or "").upper() == "SG"
+            marker = self.map_canvas.create_oval(
+                sg_x - 4, sg_y - 4, sg_x + 4, sg_y + 4,
+                fill="#35c982" if sg_selected else "#547184",
+                outline="#b9ffd9" if sg_selected else "#78909d",
+                width=1, tags=("mapshape", "country:SG"))
+            self.map_canvas.tag_bind(marker, "<Button-1>",
+                lambda _event: self.select_map_country("Singapore", "SG"))
+            self.map_canvas.tag_bind(marker, "<Enter>",
+                lambda _event: self.map_canvas.configure(cursor="hand2"))
+        except (TypeError, ValueError):
+            pass
+        self._map_drawn_selected_code = str(self.map_country_code or "").upper()
+
+    def _map_canvas_configured(self, event):
+        """Coalesce layout notifications; station selection never rebuilds the map."""
+        size = (event.width, event.height)
+        if size == self._map_draw_size or min(size) < 10:
+            return
+        if self._map_redraw_job is not None:
+            try:
+                self.after_cancel(self._map_redraw_job)
+            except tk.TclError:
+                pass
+        self._map_redraw_job = self.after(80, self._redraw_map_at_current_size)
+
+    def _redraw_map_at_current_size(self):
+        self._map_redraw_job = None
+        if not hasattr(self, "map_canvas") or not self.map_canvas.winfo_exists():
+            return
+        size = (self.map_canvas.winfo_width(), self.map_canvas.winfo_height())
+        if size == self._map_draw_size or min(size) < 10:
+            return
+        self._map_draw_size = size
+        self.draw_map()
+
+    def _update_map_highlight(self):
+        """Recolor existing country polygons without rebuilding/resizing the map."""
+        if not hasattr(self, "map_canvas"):
+            return
+        selected_code = str(self.map_country_code or "").upper()
+        previous_code = self._map_drawn_selected_code
+        if previous_code == selected_code:
+            return
+        for code in {previous_code, selected_code} - {None, ""}:
+            selected = code == selected_code
+            for item in self.map_canvas.find_withtag(f"country:{code}"):
+                self.map_canvas.itemconfigure(
+                    item, fill="#35c982" if selected else "#263e50",
+                    outline="#b9ffd9" if selected else "#547184")
+        self._map_drawn_selected_code = selected_code
     def _draw_country_piece(self, points, name, code, fill, outline):
         item = self.map_canvas.create_polygon(points, fill=fill, outline=outline,
                                               width=0.7, tags=("mapshape", f"country:{code}"))
@@ -491,48 +889,93 @@ class WorldRadioMap(WorldRadio):
             self.select_map_country(name, code)
 
     def select_map_country(self, name, code):
+        self._apply_map_country(name, code)
+        self.search_directory()
+
+    def _apply_map_country(self, name, code):
         self.map_country_name, self.map_country_code = name, code
         self.country_choice.set(name)
-        self.map_caption.configure(text=f"COUNTRY  ·  {name}" if self._pi_lite else f"WORLD MAP  ·  {name}")
-        self._set_wave_center(code)
         self._load_weather(name, code)
         self.country_time_name = name
         self.country_timezone = None
         self.country_utc_offset_seconds = None
         self.country_timezone_status = "loading"
         self.country_clock_label.configure(text=f"{name} · loading time zone…")
-        self.draw_map()
-        self.search_directory()
+        self._update_map_highlight()
 
-    def _set_wave_center(self, code):
-        feature = self.country_by_code.get((code or "").upper())
-        props = feature.get("properties", {}) if feature else {}
-        try:
-            self.wave_center = (float(props["LABEL_X"]), float(props["LABEL_Y"]))
-        except (KeyError, TypeError, ValueError):
-            self.wave_center = None
+    def _country_for_station(self, station):
+        country = (station.get("country") or "").strip()
+        code = (station.get("countrycode") or station.get("country_code") or "").strip().upper()
+        code_aliases = {"UK": "GB", "USA": "US", "U.S.": "US", "SGP": "SG", "IND": "IN"}
+        code = code_aliases.get(code, code)
+        if code:
+            name = next((name for name, mapped_code in self.country_by_name.items()
+                         if mapped_code.upper() == code), None)
+            feature = self.country_by_code.get(code)
+            if not name and feature:
+                props = feature.get("properties", {})
+                name = props.get("ADMIN") or props.get("NAME")
+            if name:
+                return name, code
+        if not country:
+            return None, None
+        folded = country.casefold()
+        name = next((name for name in self.country_by_name if name.casefold() == folded), None)
+        if name:
+            return name, self.country_by_name[name]
+        aliases = {
+            "united kingdom": ("United Kingdom of Great Britain and Northern Ireland", "GB"),
+            "great britain": ("United Kingdom", "GB"),
+            "uk": ("United Kingdom", "GB"),
+            "united states": ("United States of America", "US"),
+            "united states of america": ("United States", "US"),
+            "usa": ("United States", "US"),
+            "south korea": ("Republic of Korea", "KR"),
+            "russia": ("Russian Federation", "RU"),
+            "vietnam": ("Viet Nam", "VN"),
+            "tanzania": ("United Republic of Tanzania", "TZ"),
+            "bolivia": ("Plurinational State of Bolivia", "BO"),
+        }
+        alias_name, alias_code = aliases.get(folded, (country, None))
+        name = next((name for name in self.country_by_name
+                     if name.casefold() == alias_name.casefold()), None)
+        if name:
+            return name, self.country_by_name[name]
+        if alias_code:
+            name = next((name for name, mapped_code in self.country_by_name.items()
+                         if mapped_code.upper() == alias_code), None)
+            if name:
+                return name, self.country_by_name[name]
+        return None, None
 
-    def _animate_waves(self):
-        if self._radio_suspended:
+    def _station_list_selected(self, _event=None):
+        station = self.selected_station()
+        if not station:
             return
-        if hasattr(self, "map_canvas"):
-            canvas = self.map_canvas
-            canvas.delete("signalwave")
-            if self.wave_center:
-                width, height = max(canvas.winfo_width(), 200), max(canvas.winfo_height(), 150)
-                lon, lat = self.wave_center
-                cx = 8 + (lon + 180) / 360 * (width - 16)
-                cy = 8 + (82 - lat) / 164 * (height - 16)
-                colors = ("#7be8d2", "#54cbb7", "#398f88")
-                for i, color in enumerate(colors):
-                    radius = 5 + ((self.wave_phase + i * 12) % 36)
-                    canvas.create_oval(cx-radius, cy-radius, cx+radius, cy+radius,
-                                       outline=color, width=2, tags="signalwave")
-                canvas.create_oval(cx-3, cy-3, cx+3, cy+3,
-                                   fill="#ffe08a", outline="", tags="signalwave")
-                canvas.tag_raise("signalwave")
-                self.wave_phase = (self.wave_phase + 3) % 36
-        self.after(self._wave_interval, self._animate_waves)
+        name = (station.get("name") or "Internet radio").strip()
+        country = (station.get("country") or "Online").strip()
+        title = f"{name}  ·  {country}"
+        self.now_title.configure(text=title)
+        self.station_header_title.configure(text=title)
+        self._sync_favorite_tuner_to_station(station)
+        map_name, map_code = self._country_for_station(station)
+        if map_name and map_code and map_code != self.map_country_code:
+            self._apply_map_country(map_name, map_code)
+
+    def _sync_favorite_tuner_to_station(self, station):
+        favorite_ids = [station_id(item) for item in self.favorites.values()]
+        station_key = station_id(station)
+        if station_key in favorite_ids:
+            self.favorite_tuner_index = favorite_ids.index(station_key)
+            self.favorite_tuner_var.set(self.favorite_tuner_index + 1)
+            self.favorite_tuner_position.configure(
+                text=f"{self.favorite_tuner_index + 1:02d} / {len(favorite_ids):02d}")
+            self.favorite_tuner_station.configure(text=station.get("name", "Radio station"))
+            self._draw_favorite_tuner_dial(len(favorite_ids))
+        else:
+            self.favorite_tuner_station.configure(text=station.get("name", "Radio station"))
+            self.favorite_tuner_position.configure(text="NOT IN FAVOURITES")
+            self._draw_favorite_tuner_dial(0)
 
     def _tick_clock(self):
         if self._radio_suspended:
@@ -568,27 +1011,26 @@ class WorldRadioMap(WorldRadio):
     def _draw_analog_clock(self, now):
         canvas = self.clock_canvas
         canvas.delete("clock")
-        width = max(112, canvas.winfo_width())
-        height = max(112, canvas.winfo_height())
+        width = max(90, canvas.winfo_width())
+        height = max(90, canvas.winfo_height())
         cx, cy = width / 2, height / 2
-        radius = min(width, height) / 2 - 5
-        canvas.create_oval(cx-radius, cy-radius, cx+radius, cy+radius,
-                           fill="#182f3d", outline="#65cddd", width=2, tags="clock")
-        for tick in range(60):
-            angle = math.radians(tick * 6 - 90)
-            major = tick % 5 == 0
-            inner = radius - (10 if major else 4)
-            canvas.create_line(cx + inner * math.cos(angle), cy + inner * math.sin(angle),
-                               cx + radius * math.cos(angle), cy + radius * math.sin(angle),
-                               fill="#d9f3f4" if major else "#668491",
-                               width=2 if major else 1, tags="clock")
+        radius = min(width, height) / 2 - 3
+        # Numerals replace the old outlined dial and dense tick marks.
+        for hour_number in range(1, 13):
+            angle = math.radians(hour_number * 30 - 90)
+            number_radius = radius * 0.78
+            x = cx + number_radius * math.cos(angle)
+            y = cy + number_radius * math.sin(angle)
+            color = "#f2c66d" if hour_number == 12 else "#c3d0d5"
+            canvas.create_text(x, y, text=str(hour_number), fill=color,
+                               font=("Segoe UI", 10, "bold"), tags="clock")
         second = now.second
         minute = now.minute + second / 60
         hour = (now.hour % 12) + minute / 60
         for value, degrees, length, color, weight in (
-                (hour, 30, radius * 0.48, "#f5ca74", 4),
-                (minute, 6, radius * 0.70, "#eaf6f5", 3),
-                (second, 6, radius * 0.80, "#ff7e73", 1)):
+                (hour, 30, radius * 0.40, "#f2c66d", 4),
+                (minute, 6, radius * 0.61, "#eaf2f3", 3),
+                (second, 6, radius * 0.70, "#69cfc0", 1)):
             angle = math.radians(value * degrees - 90)
             canvas.create_line(cx, cy, cx + length * math.cos(angle), cy + length * math.sin(angle),
                                fill=color, width=weight, capstyle="round", tags="clock")
@@ -772,8 +1214,6 @@ class WorldRadioMap(WorldRadio):
                 self.weather_color = self._weather_color(code)
                 feels_text = f"  Feels {feels:g}°" if isinstance(feels, (float, int)) else ""
                 self.weather_icon.configure(text=icon)
-                if not self._pi_lite:
-                    self.weather_card.configure(highlightbackground=self.weather_color)
                 self.weather_detail.configure(
                     text=f"{temp}°C  ·  {description}{feels_text}\nHumidity {humidity}%  ·  Wind {wind} km/h")
                 self.weather_source.configure(text="Current conditions · representative country point · Open-Meteo")
@@ -784,7 +1224,6 @@ class WorldRadioMap(WorldRadio):
                     self.weather_metrics["wind"].configure(text=f"{wind} km/h")
                     self.weather_ticker_message = self._make_weather_ticker(name, data, description, temp)
                     self._reset_weather_ticker()
-                self.draw_map()
         except queue.Empty:
             pass
         self.after(self._data_poll_interval, self._drain_weather_events)
@@ -858,14 +1297,13 @@ class WorldRadioMap(WorldRadio):
 
     def clear_map_selection(self):
         self.map_country_code = self.map_country_name = None
-        self.wave_center = None
         self.country_time_name = None
         self.country_timezone = None
         self.country_utc_offset_seconds = None
         self.country_timezone_status = "local"
         self.country_clock_label.configure(text="LOCAL TIME")
         self.country_choice.set("Choose a country…")
-        self.map_caption.configure(text="COUNTRY  ·  Select a country" if self._pi_lite else "WORLD MAP  ·  Select a country")
+        self.map_caption.configure(text="COUNTRY MAP" if self._pi_lite else "WORLD MAP  ·  STATION ORIGIN")
         self.weather_title.configure(text="COUNTRY WEATHER")
         self.weather_icon.configure(text="◌")
         self.weather_detail.configure(text="Select a country for current conditions")
@@ -875,7 +1313,7 @@ class WorldRadioMap(WorldRadio):
             metric.configure(text="—")
         self.weather_ticker_message = "Select a country to see local weather and the next hours"
         self._reset_weather_ticker()
-        self.draw_map()
+        self._update_map_highlight()
         self.search_directory()
 
     def load_directory(self):
@@ -887,7 +1325,6 @@ class WorldRadioMap(WorldRadio):
             return
         if hasattr(self, "map_country_code"):
             self.map_country_code = self.map_country_name = None
-            self.wave_center = None
             self.country_time_name = None
             self.country_timezone = None
             self.country_utc_offset_seconds = None
@@ -895,7 +1332,7 @@ class WorldRadioMap(WorldRadio):
             self.country_clock_label.configure(text="LOCAL TIME")
             if hasattr(self, "country_choice"):
                 self.country_choice.set("Choose a country…")
-                self.map_caption.configure(text="COUNTRY  ·  Select a country" if self._pi_lite else "WORLD MAP  ·  Select a country")
+                self.map_caption.configure(text="COUNTRY MAP" if self._pi_lite else "WORLD MAP  ·  STATION ORIGIN")
                 self.weather_title.configure(text="COUNTRY WEATHER")
                 self.weather_icon.configure(text="◌")
                 self.weather_detail.configure(text="Select a country for current conditions")
@@ -905,13 +1342,25 @@ class WorldRadioMap(WorldRadio):
                     metric.configure(text="—")
                 self.weather_ticker_message = "Select a country to see local weather and the next hours"
                 self._reset_weather_ticker()
-                self.draw_map()
+                self._update_map_highlight()
         source = self.source_var.get() if hasattr(self, "source_var") else RADIO_SOURCES[0]
         if source == "IPRD":
             self._load_iprd_catalog(all_countries=True)
             return
         if source == "Verified Radio":
             self._load_verified_stations(all_countries=True)
+            return
+        if source == "Akashvani":
+            self._load_akashvani_stations(all_countries=True)
+            return
+        if source == "BBC":
+            self._load_bbc_stations()
+            return
+        if source == "Mediacorp":
+            self._load_mediacorp_stations()
+            return
+        if source == "SouthRadios":
+            self._load_southradios_stations(all_countries=True)
             return
         super().load_directory()
 
@@ -935,17 +1384,65 @@ class WorldRadioMap(WorldRadio):
         self.meter_phase += 0.28
         baseline = height - 3
         available = height - 14
+        meter_levels = []
         for index in range(bars):
             wave = (math.sin(self.meter_phase + index * 0.73) +
                     0.45 * math.sin(self.meter_phase * 1.7 + index * 1.19))
             level = (0.12 + 0.78 * abs(wave)) if playing else 0.06
+            meter_levels.append(level)
             bar_height = max(2, available * level)
             x1 = 4 + index * (bar_width + gap)
             canvas.create_rectangle(x1, baseline - bar_height, x1 + bar_width, baseline,
                                     fill=colors[min(len(colors) - 1,
                                                     int(level * len(colors)))],
                                     outline="", tags="meter-bar")
+        channel_levels = tuple(
+            sum(meter_levels[start:end]) / (end - start)
+            for start, end in ((0, 5), (5, 10), (10, 16)))
+        if hasattr(self, "analog_audio_meter"):
+            self._draw_analog_audio_meter(playing)
         self.after(self._meter_interval, self._animate_audio_meter)
+
+    def _draw_analog_audio_meter(self, playing):
+        canvas = self.analog_audio_meter
+        canvas.delete("all")
+        width = max(120, canvas.winfo_width())
+        height = max(88, canvas.winfo_height())
+        cx, cy = width / 2, height - 13
+        radius = min(width / 2 - 8, height - 29)
+        canvas.create_text(cx, 8, text="SIGNAL", anchor="n", fill="#91a6ad",
+                           font=("Segoe UI", 10, "bold"))
+
+        def point(fraction, distance):
+            angle = math.radians(210 + 120 * fraction)
+            return cx + distance * math.cos(angle), cy + distance * math.sin(angle)
+
+        for start, end, color in ((0.0, 0.62, "#55d6a0"),
+                                  (0.62, 0.84, "#e5c65b"),
+                                  (0.84, 1.0, "#e87561")):
+            points = [point(start + (end - start) * step / 18, radius)
+                      for step in range(19)]
+            canvas.create_line(*[coordinate for xy in points for coordinate in xy],
+                               fill=color, width=4, capstyle="round", tags="dial")
+
+        for index in range(11):
+            fraction = index / 10
+            x1, y1 = point(fraction, radius - 1)
+            x2, y2 = point(fraction, radius - (9 if index % 5 == 0 else 5))
+            canvas.create_line(x1, y1, x2, y2, fill="#d2dfe2" if index % 5 == 0 else "#71858c",
+                               width=1, tags="dial")
+        for index, label in ((0, "0"), (5, "5"), (10, "10")):
+            x, y = point(index / 10, radius - 17)
+            canvas.create_text(x, y, text=label, fill="#d2dfe2",
+                               font=("Segoe UI", 10, "bold"), tags="dial")
+
+        wave = (math.sin(self.meter_phase * 1.3) + 0.45 * math.sin(self.meter_phase * 2.1))
+        level = min(0.94, 0.12 + 0.78 * abs(wave)) if playing else 0.015
+        nx, ny = point(level, radius - 11)
+        canvas.create_line(cx, cy, nx, ny, fill="#f2c66d", width=2,
+                           capstyle="round", tags="needle")
+        canvas.create_oval(cx - 3, cy - 3, cx + 3, cy + 3,
+                           fill="#f2c66d", outline="", tags="needle")
 
     def search_directory(self):
         self.only_favorites = False
@@ -959,6 +1456,18 @@ class WorldRadioMap(WorldRadio):
             return
         if source == "Verified Radio":
             self._load_verified_stations(all_countries=False)
+            return
+        if source == "Akashvani":
+            self._load_akashvani_stations(all_countries=not bool(self.map_country_code))
+            return
+        if source == "BBC":
+            self._load_bbc_stations()
+            return
+        if source == "Mediacorp":
+            self._load_mediacorp_stations()
+            return
+        if source == "SouthRadios":
+            self._load_southradios_stations(all_countries=not bool(self.map_country_code))
             return
         params = {"limit": PAGE_SIZE, "offset": 0, "order": "clickcount",
                   "reverse": "true", "hidebroken": "true"}
@@ -982,6 +1491,111 @@ class WorldRadioMap(WorldRadio):
             self.after(250, reload_when_idle)
         else:
             self.search_directory()
+
+    def _load_akashvani_stations(self, all_countries=False):
+        if self.akashvani_catalog is not None:
+            self._show_external_stations(self.akashvani_catalog, "Akashvani", all_countries)
+            return
+
+        def fetch():
+            payload = self._fetch_json(AKASHVANI_STATIONS_URL)
+            rows = []
+            for item in payload if isinstance(payload, list) else []:
+                station = self._external_station(
+                    "akashvani", item.get("epg_id") or item.get("stream_url"),
+                    item.get("name"), "India", item.get("stream_url"),
+                    ", ".join(value for value in
+                              (item.get("state", ""), item.get("language", "")) if value),
+                    "HLS")
+                if station:
+                    rows.append(station)
+            return rows
+
+        self.async_call(fetch, self._akashvani_loaded, "Loading Akashvani station streams…")
+
+    def _akashvani_loaded(self, rows):
+        self.akashvani_catalog = rows
+        self._show_external_stations(rows, "Akashvani", all_countries=not bool(self.map_country_code))
+
+    def _load_bbc_stations(self):
+        if self.bbc_catalog is None:
+            self.bbc_catalog = [
+                station for name, key, stream, tags in BBC_STATIONS
+                if (station := self._external_station(
+                    "bbc", key, name, "United Kingdom", stream, tags, "HLS"))
+            ]
+        self._show_external_stations(self.bbc_catalog, "BBC", all_countries=True)
+        self.set_status(f"BBC · {len(self.stations):,} live stations · international feeds")
+
+    def _load_mediacorp_stations(self):
+        if self.mediacorp_catalog is None:
+            self.mediacorp_catalog = [
+                station for name, stream_id, tags in MEDIACORP_STATIONS
+                if (station := self._external_station(
+                    "mediacorp", stream_id, name, "Singapore",
+                    f"https://playerservices.streamtheworld.com/api/livestream-redirect/{stream_id}.aac",
+                    tags, "AAC"))
+            ]
+        self._show_external_stations(self.mediacorp_catalog, "Mediacorp", all_countries=True)
+        self.set_status(f"Mediacorp · {len(self.stations):,} live stations · Singapore")
+
+    def _load_southradios_stations(self, all_countries=False):
+        if self.southradios_catalog is not None:
+            self._show_external_stations(self.southradios_catalog, "SouthRadios", all_countries)
+            return
+
+        def fetch_catalog():
+            found = {}
+
+            def lookup(name):
+                try:
+                    rows = api_get("/stations/search", {
+                        "name": name, "limit": 400,
+                        "order": "clickcount", "reverse": "true", "hidebroken": "true",
+                    })
+                    return name, rows if isinstance(rows, list) else []
+                except Exception:
+                    return name, []
+
+            # Broad Tamil searches recover channels whose directory record uses
+            # a SouthRadios-branded title instead of the short name on the site.
+            queries = (*SOUTHRADIOS_STATION_NAMES, "SouthRadios", "Tamil")
+            with ThreadPoolExecutor(max_workers=6) as pool:
+                futures = [pool.submit(lookup, name) for name in queries]
+                for future in as_completed(futures):
+                    target, rows = future.result()
+                    target_key = re.sub(r"[^a-z0-9]+", "", target.casefold())
+                    for item in rows:
+                        homepage = (item.get("homepage") or "").casefold()
+                        station_name = (item.get("name") or "").strip()
+                        station_key = re.sub(r"[^a-z0-9]+", "", station_name.casefold())
+                        is_southradios = "southradios.com" in homepage
+                        is_named_match = (target_key not in {"southradios", "tamil"}
+                                          and (target_key in station_key or station_key in target_key))
+                        if not is_southradios and not is_named_match:
+                            continue
+                        stream = item.get("url_resolved") or item.get("url")
+                        station = self._external_station(
+                            "southradios", item.get("stationuuid") or stream,
+                            station_name or target, item.get("country") or "India",
+                            stream, item.get("tags", ""), item.get("codec", ""),
+                            item.get("bitrate", 0), item.get("clickcount", 0))
+                        if station:
+                            station["stationuuid"] = item.get("stationuuid") or station["stationuuid"]
+                            found[station_id(station)] = station
+            return sorted(found.values(), key=lambda row: row["name"].casefold())
+
+        self.async_call(fetch_catalog, self._southradios_loaded,
+                        "Finding SouthRadios live streams…")
+
+    def _southradios_loaded(self, rows):
+        # Retry on a later selection if the directory was temporarily empty.
+        self.southradios_catalog = rows or None
+        self._show_external_stations(rows, "SouthRadios", all_countries=not bool(self.map_country_code))
+        if rows:
+            self.set_status(f"SouthRadios · {len(rows):,} directory streams")
+        else:
+            self.set_status("No SouthRadios streams found in the directory right now. Try again later.")
 
     @staticmethod
     def _fetch_json(url):
@@ -1170,6 +1784,8 @@ class WorldRadioMap(WorldRadio):
 
     def render(self):
         rows = list(self.stations)
+        previous_selection = self.table.selection()
+        previous_selected_id = previous_selection[0] if previous_selection else None
         for item in self.table.get_children():
             self.table.delete(item)
         for station in rows:
@@ -1179,14 +1795,24 @@ class WorldRadioMap(WorldRadio):
             self.table.insert("", "end", iid=str(hash(station_id(station))), values=(
                 name, (station.get("tags") or "—")[:25], station.get("bitrate", 0) or "—"))
         self._row_stations = {str(hash(station_id(station))): station for station in rows}
+        selected_id = previous_selected_id if previous_selected_id in self._row_stations else None
+        if selected_id is None and self.current:
+            playing_id = str(hash(station_id(self.current)))
+            if playing_id in self._row_stations:
+                selected_id = playing_id
+        if selected_id:
+            self.table.selection_set(selected_id)
+            self.table.see(selected_id)
         label = f"{len(rows):,} stations"
         if self.map_country_name and not self.only_favorites:
             label += f" · {self.map_country_name}"
         elif self.only_favorites:
             label += " · Favorites"
         self.count_label.configure(text=label)
+        self._refresh_favorite_tuner()
 
 
 if __name__ == "__main__":
     app = WorldRadioMap()
     app.root.mainloop()
+
