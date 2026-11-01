@@ -7,9 +7,10 @@
   <meta name="description" content="COOLmagRaTv — internet radio and live television in one simple media center.">
   <title>COOLmagRaTv · Internet Radio & Live TV</title>
   <link rel="preconnect" href="https://de1.api.radio-browser.info">
-  <link rel="stylesheet" href="style.css?v=20261101-remove-playlist-schedule-pages">
+  <link rel="stylesheet" href="style.css?v=20261101-live-user-count">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/hls.js@1.5.18/dist/hls.min.js"></script>
-  <script defer src="app.js?v=20261101-remove-playlist-schedule-pages"></script>
+  <script defer src="app.js?v=20261101-live-user-count"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -76,6 +77,7 @@
             <div class="dashboard-weather"><div><span class="eyebrow">LOCAL WEATHER</span><b id="home-weather-place">India</b></div><span id="home-weather-temperature">--°</span><small id="home-weather-summary">Weather follows the selected radio country.</small></div>
           </aside>
         </div>
+        <div class="live-users-strip" aria-label="People using the app right now"><span class="live-users-dot" aria-hidden="true"></span><span>USING IT NOW</span><strong id="live-user-count" aria-live="polite">—</strong></div>
       </section>
 
       <section class="view-panel" id="radio-view" aria-label="World Radio">

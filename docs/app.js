@@ -7,6 +7,8 @@
     'https://at1.api.radio-browser.info/json'
   ];
   const IPTV_BASE = 'https://iptv-org.github.io/iptv/';
+  // Add the Supabase project URL and publishable key to enable the live presence count.
+  const PRESENCE_CONFIG = {url:'',publishableKey:''};
   const HOME_BBC = {
     name:'BBC News South Asia (720p)',
     group:'News · United Kingdom',
@@ -418,6 +420,33 @@
     tvTarget.querySelectorAll('[data-fav-tv]').forEach(card=>card.addEventListener('click',event=>{if(event.target.closest('[data-fav-tv-remove]'))return;const station=tvs.find(item=>item.url===card.dataset.favTv);if(station){setView('tv');playTV(station);}}));
     tvTarget.querySelectorAll('[data-fav-tv-remove]').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();const station=tvs.find(item=>item.url===button.dataset.favTvRemove);if(station)toggleTVFavorite(station);}));
   }
+  function recordRecent(kind,station) {
+    const rows=recentHistory[kind];if(!rows||!station)return;
+    const key=kind==='tv'?station.url:radioKey(station);
+    const saved={...station,playedAt:new Date().toISOString()};
+    recentHistory[kind]=[saved,...rows.filter(item=>(kind==='tv'?item.url:radioKey(item))!==key)].slice(0,20);
+    try{localStorage.setItem(`coolmag.recent.${kind}.v1`,JSON.stringify(recentHistory[kind]));}catch{}
+    renderRecent();
+  }
+  function renderRecent() {
+    const radioTarget=$('recent-radio-grid'),tvTarget=$('recent-tv-grid');if(!radioTarget||!tvTarget)return;
+    const render=(kind,target)=>{
+      const rows=recentHistory[kind];
+      if(!rows.length){target.innerHTML=`<div class="empty-state">No ${kind==='tv'?'TV channels':'radio stations'} played yet.</div>`;return;}
+      target.innerHTML=rows.map((item,index)=>{
+        const date=item.playedAt?new Date(item.playedAt):null;
+        const when=date&&!Number.isNaN(date.getTime())?date.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'Recently played';
+        const title=item.name||(kind==='tv'?'TV channel':'Radio station');
+        const detail=kind==='tv'?(item.group||item.country||'Live television'):(item.country||'Internet radio');
+        return `<article class="favorite-row recent-row" data-recent-${kind}="${index}" tabindex="0" role="button"><span>${kind==='tv'?'▣':'♫'}</span><div><b>${safe(title)}</b><small>${safe(detail)} · ${safe(when)}</small></div><i aria-hidden="true">▶</i></article>`;
+      }).join('');
+      target.querySelectorAll(`[data-recent-${kind}]`).forEach(card=>{
+        const play=()=>{const item=recentHistory[kind][Number(card.dataset[`recent${kind==='tv'?'Tv':'Radio'}`])];if(item){if(kind==='tv')playTV(item);else playRadio(item);}};
+        card.addEventListener('click',play);card.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();play();}});
+      });
+    };
+    render('radio',radioTarget);render('tv',tvTarget);
+  }
   function renderSchedule() {
     const title=currentTV?.name||currentRadio?.name||'Nothing playing';
     const detail=currentTV?`LIVE TV · ${currentTV.group||'Live'}`:currentRadio?`${currentRadio.country||'Radio'} · LIVE`:'Choose a station or channel.';
@@ -456,7 +485,7 @@
   function playRadio(station) {
     const url = station?.url_resolved || station?.url;
     if (!url) { toast('This station has no playable stream URL.'); return; }
-    stopHomePreview();
+    stopHomePreview();recordRecent('radio',station);
     stopTV();radioAudio.pause();currentRadio = station;
     radioAudio.src = url; radioAudio.volume = Number($('volume').value);
     $('playing-title').textContent = station.name || 'Internet radio';
@@ -599,7 +628,7 @@
     }).catch(()=>toast('Full view is blocked by this browser. Turn your phone sideways to fit the TV screen.'));
   }
   function playTV(station) {
-    if(!station?.url)return;stopHomePreview();requestMobileTVLandscape();radioAudio.pause();radioAudio.removeAttribute('src');radioAudio.load();currentRadio=null;currentTV=station;
+    if(!station?.url)return;stopHomePreview();recordRecent('tv',station);requestMobileTVLandscape();radioAudio.pause();radioAudio.removeAttribute('src');radioAudio.load();currentRadio=null;currentTV=station;
     if(hls){hls.destroy();hls=null;}tvVideo.pause();tvVideo.removeAttribute('src');tvVideo.load();
     $('video-stage').querySelector('.video-placeholder').classList.add('hidden');$('tv-now-playing').textContent=station.name;
     $('playing-title').textContent=station.name;$('playing-subtitle').textContent=`LIVE TV · ${station.group}`;
@@ -645,6 +674,22 @@
   }
   function updateClock(){try{$('local-time').textContent=new Intl.DateTimeFormat('en-GB',{timeZone:selectedTimezone,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());$('local-date').textContent=new Intl.DateTimeFormat('en',{timeZone:selectedTimezone,weekday:'short',day:'2-digit',month:'short'}).format(new Date()).toUpperCase();}catch{$('local-time').textContent=new Date().toLocaleTimeString();}}
 
-  renderNews();updateFavoriteCounts();updateClock();setInterval(updateClock,1000);startHomePreview();loadSharedFavorites();
+  function startLiveUserCounter(){
+    const display=$('live-user-count');
+    if(!PRESENCE_CONFIG.url||!PRESENCE_CONFIG.publishableKey||!window.supabase?.createClient)return;
+    try{
+      const client=window.supabase.createClient(PRESENCE_CONFIG.url,PRESENCE_CONFIG.publishableKey);
+      const clientId=globalThis.crypto?.randomUUID?.()||`visitor-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const channel=client.channel('coolmag-live-users',{config:{presence:{key:clientId}}});
+      const updateCount=()=>{const state=channel.presenceState();display.textContent=String(Object.values(state).filter(sessions=>Array.isArray(sessions)&&sessions.length).length);};
+      channel.on('presence',{event:'sync'},updateCount).subscribe(status=>{
+        display.closest('.live-users-strip')?.setAttribute('data-connected',String(status==='SUBSCRIBED'));
+        if(status==='SUBSCRIBED')channel.track({online:true,joinedAt:new Date().toISOString()}).catch(()=>{});
+      });
+      window.addEventListener('pagehide',()=>channel.untrack().catch(()=>{}),{once:true});
+    }catch{display.textContent='—';}
+  }
+
+  renderNews();renderRecent();updateFavoriteCounts();updateClock();startLiveUserCounter();setInterval(updateClock,1000);startHomePreview();loadSharedFavorites();
   loadCountries().then(()=>{const name=$('country-select').selectedOptions[0]?.text||'India';loadWeather(name,$('country-select').value);searchRadio();});
 })();

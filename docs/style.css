@@ -100,6 +100,13 @@ main{grid-column:2;grid-row:2;min-width:0;overflow:visible;padding-top:19px}.vie
 .home-radio-channel.active{border-color:#75a8ff;box-shadow:inset 0 0 0 1px #75a8ff66,0 7px 24px #2563eb22}
 .home-radio-channel .channel-art>span{font:800 calc(24px + 2pt) Manrope,sans-serif}
 @media(max-width:950px) and (min-width:761px){.home-radio-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.recent-row{min-height:70px;transition:border-color .15s,background .15s}
+.recent-row:hover{border-color:#456cae;background:#1b2230}
+.recent-row>i{margin-left:auto;color:#8fb5ff;font-size:calc(12px + 2pt);font-style:normal}
+.live-users-strip{min-height:42px;display:flex;align-items:center;justify-content:flex-end;gap:9px;margin-top:14px;padding:0 13px;color:#8793a5;font-size:calc(9px + 2pt);font-weight:800;letter-spacing:.12em}
+.live-users-dot{width:7px;height:7px;border-radius:50%;background:#727c8c}
+.live-users-strip[data-connected="true"] .live-users-dot{background:#42d392;box-shadow:0 0 10px #42d39288}
+.live-users-strip strong{min-width:27px;color:#fff;font:800 calc(18px + 2pt) Manrope,sans-serif;letter-spacing:0;text-align:right}
 #tv-view.favorites-first .channel-card{padding:0;border:0;background:transparent;overflow:visible}
 #tv-view.favorites-first .channel-card>.section-heading{margin:4px 2px 14px}
 #tv-view.favorites-first .channel-list{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:13px}
