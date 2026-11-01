@@ -86,7 +86,17 @@ class WorldRadio(tk.Frame):
         self.after(350, self.load_directory)
         if vlc:
             try:
-                self.vlc_instance = vlc.Instance("--no-video", "--quiet")
+                # Apply stronger broadcast-style dynamic-range compression so
+                # loud and quiet stations are closer in perceived level. Keep
+                # the app slider as the final output-volume control.
+                self.vlc_instance = vlc.Instance(
+                    "--no-video", "--quiet", "--audio-filter=compressor,stereo_widen",
+                    "--compressor-rms-peak=0.25", "--compressor-attack=20",
+                    "--compressor-release=300", "--compressor-threshold=-24",
+                    "--compressor-ratio=5", "--compressor-knee=8",
+                    "--compressor-makeup-gain=6",
+                    "--stereowiden-delay=20", "--stereowiden-feedback=0.25",
+                    "--stereowiden-crossfeed=0.18", "--stereowiden-dry-mix=0.9")
                 self.player = self.vlc_instance.media_player_new()
             except Exception as exc:
                 self.vlc_instance = self.player = None
@@ -393,7 +403,12 @@ class WorldRadio(tk.Frame):
         generation = self._playback_generation
         previous = self.current
         self.current = s
-        self.now_title.configure(text=(s.get("name") or "Internet radio").strip())
+        station_name = (s.get("name") or "Internet radio").strip()
+        station_country = (s.get("country") or "Online").strip()
+        station_title = f"{station_name}  ·  {station_country}"
+        self.now_title.configure(text=station_title)
+        if hasattr(self, "station_header_title"):
+            self.station_header_title.configure(text=station_title)
         self.set_status("Connecting to live stream…  ·  " + (s.get("country") or "Online"))
         self._update_playing_rows(previous, s)
         volume = self.volume.get()

@@ -25,6 +25,11 @@ UPDATE_FILES = (
     "magazine_reader.py",
     "countries.geojson",
 )
+FAVORITE_FILES = (
+    "favorites.json",
+    "map_favorites.json",
+    "surak_home_tv_favorites.json",
+)
 
 # Select the full interface in the shared feature panels (map, tickers, TV cards).
 os.environ["SURAK_PI_LITE"] = "0"
@@ -130,7 +135,14 @@ class SurakMediaCenterPi5(tk.Tk):
                 installed_commit = version_file.read_text(encoding="ascii").strip()
             except OSError:
                 installed_commit = ""
-            if installed_commit == commit:
+            favorites_version_file = app_dir / ".github_favorites_sha"
+            try:
+                favorites_commit = favorites_version_file.read_text(encoding="ascii").strip()
+            except OSError:
+                favorites_commit = ""
+            update_code = installed_commit != commit
+            update_favorites = favorites_commit != commit
+            if not update_code and not update_favorites:
                 self._update_events.put(("current", None))
                 return
 
@@ -139,10 +151,35 @@ class SurakMediaCenterPi5(tk.Tk):
             backup_dir = staging_root / "backup"
             staged_dir.mkdir()
             backup_dir.mkdir()
-            for name in UPDATE_FILES:
+            files_to_fetch = ((*UPDATE_FILES,) if update_code else ()) + (
+                (*FAVORITE_FILES,) if update_favorites else ())
+            favorites_added = 0
+            for name in files_to_fetch:
                 url = f"{GITHUB_RAW_BASE}/{commit}/{name}"
                 data = self._read_url(url, 12_000_000)
-                data.decode("utf-8")  # reject incomplete or unexpected binary content
+                text = data.decode("utf-8")  # reject incomplete or unexpected binary content
+                if name in FAVORITE_FILES:
+                    remote_data = json.loads(text)
+                    if not isinstance(remote_data, dict):
+                        raise ValueError(f"GitHub favorite file {name} has an unexpected format.")
+                    local_path = app_dir / name
+                    if local_path.exists():
+                        local_data = json.loads(local_path.read_text(encoding="utf-8"))
+                        if not isinstance(local_data, dict):
+                            raise ValueError(f"Saved favorite file {name} has an unexpected format.")
+                    else:
+                        local_data = {}
+                    favorites_added += len(set(remote_data) - set(local_data))
+                    # Keep Pi-only favorites, while refreshing matching records
+                    # from GitHub so changed stream URLs and station details land.
+                    merged_data = dict(local_data)
+                    for key, remote_value in remote_data.items():
+                        local_value = local_data.get(key)
+                        if isinstance(remote_value, dict) and isinstance(local_value, dict):
+                            merged_data[key] = {**local_value, **remote_value}
+                        else:
+                            merged_data[key] = remote_value
+                    data = json.dumps(merged_data, ensure_ascii=False, indent=2).encode("utf-8")
                 (staged_dir / name).write_bytes(data)
 
             replaced = []
@@ -157,6 +194,10 @@ class SurakMediaCenterPi5(tk.Tk):
                 marker_temp = staging_root / "version"
                 marker_temp.write_text(commit + "\n", encoding="ascii")
                 os.replace(marker_temp, version_file)
+                if update_favorites:
+                    favorites_marker_temp = staging_root / "favorites-version"
+                    favorites_marker_temp.write_text(commit + "\n", encoding="ascii")
+                    os.replace(favorites_marker_temp, favorites_version_file)
             except Exception:
                 for name in reversed(replaced):
                     destination = app_dir / name
@@ -166,7 +207,11 @@ class SurakMediaCenterPi5(tk.Tk):
                     else:
                         destination.unlink(missing_ok=True)
                 raise
-            self._update_events.put(("updated", commit))
+            self._update_events.put(("updated", {
+                "commit": commit,
+                "code_updated": update_code,
+                "favorites_added": favorites_added,
+            }))
         except Exception as exc:
             self._update_events.put(("error", str(exc)))
         finally:
@@ -185,13 +230,24 @@ class SurakMediaCenterPi5(tk.Tk):
         self.update_button.configure(state="normal")
         if kind == "current":
             self.update_button.configure(text="✓ UP TO DATE")
-            messagebox.showinfo("CoolMag Media Center", "You already have the latest version.", parent=self)
+            messagebox.showinfo(
+                "CoolMag Media Center",
+                "The app and favorite lists are already up to date.", parent=self)
         elif kind == "updated":
             self._pending_restart = True
             self.update_button.configure(text="↻ RESTART TO APPLY", bg="#278656")
+            added = detail.get("favorites_added", 0)
+            update_message = ("The latest app files are ready."
+                              if detail.get("code_updated")
+                              else "The favorite lists have been synchronized from GitHub.")
+            if added:
+                update_message += f"\n\nAdded {added} favorite entries from GitHub."
+            update_message += (
+                "\n\nPi-only favorites are kept, and matching entries use the latest "
+                "GitHub station or stream details. Restart now to load the changes?")
             if messagebox.askyesno(
                     "Update ready",
-                    "The latest files were downloaded. Restart the media center now to apply them?",
+                    update_message,
                     parent=self):
                 self._restart_with_updated_files()
         else:

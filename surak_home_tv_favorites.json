@@ -329,5 +329,40 @@
     "logo": "https://i.imgur.com/K3M8MoK.png",
     "url": "https://nw18live.cdn.jio.com/bpk-tv/CNN_News18_NW18_MOB/output01/index.m3u8",
     "options": []
+  },
+  "http://103.185.24.134:3001/SONY-BBC/index.m3u8": {
+    "name": "Sony BBC Earth HD (1080p)",
+    "group": "Documentary",
+    "logo": "https://dtil.tmsimg.com/assets/s143800_ld_h15_aa.png?lock=720x540",
+    "url": "http://103.185.24.134:3001/SONY-BBC/index.m3u8",
+    "options": []
+  },
+  "https://drk6xq0vhn.gpcdn.net/live/animal_planet_hd_abr/index.m3u8": {
+    "name": "Animal Planet (India) HD (720p)",
+    "group": "Documentary",
+    "logo": "https://xstreamcp-assets-msp.streamready.in/assets/LIVETV/LIVECHANNEL/LIVETV_LIVETVCHANNEL_ANIMAL_PLANET/images/LOGO_HD/image.png",
+    "url": "https://drk6xq0vhn.gpcdn.net/live/animal_planet_hd_abr/index.m3u8",
+    "options": []
+  },
+  "https://d2o8pibksxtln6.cloudfront.net/live/media/Zee_Tamil_HD/hls/Zee_Tamil_HD.m3u8": {
+    "name": "Zee Tamil HD (1080p)",
+    "group": "Entertainment",
+    "logo": "https://dtil.tmsimg.com/assets/GNLZZGG00233WCL.png?lock=720x540",
+    "url": "https://d2o8pibksxtln6.cloudfront.net/live/media/Zee_Tamil_HD/hls/Zee_Tamil_HD.m3u8",
+    "options": []
+  },
+  "https://tinyurl.com/yn3d3rmd": {
+    "name": "HBO Asia SD (720p) [Geo-blocked]",
+    "group": "Movies",
+    "logo": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d5/HBO_Asia.png/960px-HBO_Asia.png",
+    "url": "https://tinyurl.com/yn3d3rmd",
+    "options": []
+  },
+  "https://dbrb49pjoymg4.cloudfront.net/v1/master/3fec3e5cac39a52b2132f9c66c83dae043dc17d4/prod_default_xumo-ams-aws/master.m3u8?ads.xumo_channelId=99991709": {
+    "name": "Hallmark Movies & More (1080p)",
+    "group": "Movies",
+    "logo": "https://provider-static.plex.tv/epg/cms/production/29af70d1-d3ba-4a16-bc4d-bd99e7e7def4/hallmark-movies-and-more_color.png",
+    "url": "https://dbrb49pjoymg4.cloudfront.net/v1/master/3fec3e5cac39a52b2132f9c66c83dae043dc17d4/prod_default_xumo-ams-aws/master.m3u8?ads.xumo_channelId=99991709",
+    "options": []
   }
 }
