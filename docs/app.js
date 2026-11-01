@@ -35,6 +35,8 @@
   let showingRadioFavorites = false;
   let showingTVFavorites = false;
   let tvFilterTouched = false;
+  let sharedTVFavoritesLoaded = false;
+  let sharedFavoritesPromise = null;
   let currentRadio = null;
   let currentTV = null;
   let hls = null;
@@ -126,7 +128,10 @@
   }
 
   function setView(view) {
-    if(view==='tv')showingTVFavorites=Object.keys(tvFavorites).length>0;
+    if(view==='tv'){
+      showingTVFavorites=Object.keys(tvFavorites).length>0||!sharedTVFavoritesLoaded;
+      if(!sharedTVFavoritesLoaded)loadSharedFavorites();
+    }
     document.querySelectorAll('.side-link').forEach(button=>button.classList.toggle('active',button.dataset.view===view||(view==='playlists'&&button.dataset.action==='playlists')));
     document.querySelectorAll('.view-panel').forEach(panel => panel.classList.toggle('active', panel.id === `${view}-view`));
     const titles={home:'Your media, in one place',radio:'World Radio',tv:'Live TV',schedule:'Schedule & queue',favorites:'Your favorites',playlists:'TV playlists',news:'News & magazines'};
@@ -213,26 +218,38 @@
     syncTransport();
   }
   async function loadSharedFavorites() {
-    const base = 'https://raw.githubusercontent.com/suppuone/RADIOtv/main/';
-    const sources = [
-      ['map_favorites.json', radioFavorites, 'coolmag.radio.favorites.v1'],
-      ['surak_home_tv_favorites.json', tvFavorites, 'coolmag.tv.favorites.v1']
-    ];
-    await Promise.all(sources.map(async ([file, target, storageKey]) => {
-      try {
-        const response = await fetch(base + file, {cache:'no-store'});
-        if (!response.ok) return;
-        const shared = await response.json();
-        if (!shared || typeof shared !== 'object' || Array.isArray(shared)) return;
-        for (const [key, station] of Object.entries(shared)) target[key] = station;
-        persist(storageKey, target);
-      } catch { /* Local favorites keep working if GitHub is unreachable. */ }
-    }));
-    updateFavoriteCounts();
-    if (showingRadioFavorites) renderRadio();
-    if (!tvFilterTouched && Object.keys(tvFavorites).length) showingTVFavorites = true;
-    if (showingTVFavorites) renderTV();
-    renderHomeRadio();renderHomeTV();renderFavorites();renderSchedule();
+    if(sharedFavoritesPromise)return sharedFavoritesPromise;
+    sharedFavoritesPromise=(async()=>{
+      const sources=[
+        ['map_favorites.json',radioFavorites,'coolmag.radio.favorites.v1'],
+        ['surak_home_tv_favorites.json',tvFavorites,'coolmag.tv.favorites.v1']
+      ];
+      await Promise.all(sources.map(async([file,target,storageKey])=>{
+        const urls=[
+          `https://raw.githubusercontent.com/suppuone/RADIOtv/main/${file}?refresh=${Date.now()}`,
+          `https://cdn.jsdelivr.net/gh/suppuone/RADIOtv@main/${file}`
+        ];
+        for(const url of urls){
+          try{
+            const response=await fetch(url,{cache:'no-store'});
+            if(!response.ok)continue;
+            const shared=await response.json();
+            if(!shared||typeof shared!=='object'||Array.isArray(shared))continue;
+            for(const[key,station]of Object.entries(shared))target[key]=station;
+            persist(storageKey,target);
+            if(file==='surak_home_tv_favorites.json')sharedTVFavoritesLoaded=true;
+            break;
+          }catch{/* Retry through the alternate public mirror. */}
+        }
+      }));
+      updateFavoriteCounts();
+      if(showingRadioFavorites)renderRadio();
+      if(!tvFilterTouched)showingTVFavorites=Object.keys(tvFavorites).length>0;
+      if(showingTVFavorites||$('tv-view').classList.contains('active'))renderTV();
+      renderHomeRadio();renderHomeTV();renderFavorites();renderSchedule();
+    })();
+    try{return await sharedFavoritesPromise;}
+    finally{sharedFavoritesPromise=null;}
   }
   function updateCurrentRadioStar() {
     const starred = Boolean(currentRadio && radioFavorites[radioKey(currentRadio)]);
@@ -485,14 +502,14 @@
   }
   function renderTV() {
     const rows=filteredTV();const list=$('tv-channels');
-    const favoritesFirst=showingTVFavorites&&Object.keys(tvFavorites).length>0;
+    const favoritesFirst=showingTVFavorites;
     $('tv-channel-count').textContent=rows.length.toLocaleString();
     $('tv-view').classList.toggle('favorites-first',favoritesFirst&&!currentTV);
     $('tv-favorites-button').classList.toggle('active',showingTVFavorites);
     $('tv-favorites-button').innerHTML=`${showingTVFavorites?'★ Your favorites':'♡ Favorites'} <span class="count-pill" id="tv-favorite-count">${Object.keys(tvFavorites).length}</span>`;
     $('tv-list-eyebrow').textContent=showingTVFavorites?'YOUR TV FAVORITES':'CHANNEL GUIDE';
     $('tv-list-title').textContent=showingTVFavorites?'Favorite channels':'Live TV';
-    if(!rows.length){list.innerHTML=showingTVFavorites?'<div class="empty-state">No TV favorites saved yet. Star channels to keep them here.</div>':'<div class="empty-state">No matching channels. Choose a playlist or adjust your search.</div>';renderHomeTV();renderFavorites();return;}
+    if(!rows.length){list.innerHTML=showingTVFavorites?`<div class="empty-state">${sharedTVFavoritesLoaded?'No TV favorites saved yet. Star channels to keep them here.':'Loading your saved TV favorites…'}</div>`:'<div class="empty-state">No matching channels. Choose a playlist or adjust your search.</div>';renderHomeTV();renderFavorites();return;}
     list.innerHTML=rows.map(row=>`<article class="home-channel tv-channel ${currentTV&&currentTV.url===row.url?'active':''}" data-tv-url="${safe(row.url)}" tabindex="0" role="button"><div class="channel-art">${row.logo?`<img src="${safe(row.logo)}" loading="lazy" alt="" onerror="this.style.display='none'">`:'<span>▣</span>'}<i>LIVE</i></div><button class="tile-star ${tvFavorites[tvKey(row)]?'is-favorite':''}" data-tv-star="${safe(row.url)}" aria-label="Toggle favorite">${tvFavorites[tvKey(row)]?'★':'☆'}</button><b>${safe(row.name)}</b><small>${safe(row.group||'Live television')}</small></article>`).join('');
     list.querySelectorAll('.tv-channel').forEach(item=>{const row=rows.find(candidate=>candidate.url===item.dataset.tvUrl);item.addEventListener('click',event=>{if(event.target.closest('[data-tv-star]'))return;playTV(row);});item.addEventListener('keydown',event=>{if(event.key==='Enter'){playTV(row);}});});
     list.querySelectorAll('[data-tv-star]').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();const row=rows.find(candidate=>candidate.url===button.dataset.tvStar);if(row)toggleTVFavorite(row);}));
