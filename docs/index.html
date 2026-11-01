@@ -7,9 +7,9 @@
   <meta name="description" content="COOLmagRaTv — internet radio and live television in one simple media center.">
   <title>COOLmagRaTv · Internet Radio & Live TV</title>
   <link rel="preconnect" href="https://de1.api.radio-browser.info">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20261101-tv-favorites-home">
   <script defer src="https://cdn.jsdelivr.net/npm/hls.js@1.5.18/dist/hls.min.js"></script>
-  <script defer src="app.js"></script>
+  <script defer src="app.js?v=20261101-tv-favorites-home"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -44,7 +44,7 @@
     <header class="topbar">
       <button class="menu-button" id="menu-button" aria-label="Open navigation">☰</button>
       <div class="page-heading"><span class="eyebrow">COOLMAG MEDIA</span><h1 id="section-title">Your media, in one place</h1></div>
-      <div class="topbar-right"><div class="header-clock"><span id="local-time">--:--</span><small id="local-date">LOCAL TIME</small></div><span class="online-pill"><i></i> ONLINE</span></div>
+      <div class="topbar-right"><button class="landscape-button" id="landscape-button" aria-label="Enter landscape fullscreen" title="Landscape view">⛶ <span>LANDSCAPE</span></button><div class="header-clock"><span id="local-time">--:--</span><small id="local-date">LOCAL TIME</small></div><span class="online-pill"><i></i> ONLINE</span></div>
     </header>
 
     <main id="main-content">
@@ -97,7 +97,7 @@
         <div class="orientation-hint">For the best TV view, turn your phone sideways.</div>
         <div class="tv-layout">
           <article class="video-card"><div class="video-stage" id="video-stage"><div class="video-placeholder"><span class="play-orb">▶</span><b>Choose a channel</b><small>Compatible live streams play here.</small></div><video id="tv-player" controls playsinline></video></div><div class="video-meta"><div class="tv-playing-title"><span class="eyebrow">NOW PLAYING</span><h2 id="tv-now-playing">No channel selected</h2></div><button class="star-button" id="tv-current-favorite" title="Add to favorites" aria-label="Add current channel to favorites">♡</button></div><p class="stream-note" id="tv-note">Streams are provided by their broadcasters.</p></article>
-          <aside class="channel-card"><div class="section-heading"><div><span class="eyebrow">CHANNEL GUIDE</span><h2>Live TV</h2></div><span class="count-pill" id="tv-channel-count">0</span></div><div class="channel-list" id="tv-channels"><div class="empty-state">Load a playlist to browse channels.</div></div></aside>
+          <aside class="channel-card"><div class="section-heading"><div><span class="eyebrow" id="tv-list-eyebrow">YOUR TV FAVORITES</span><h2 id="tv-list-title">Live TV</h2></div><span class="count-pill" id="tv-channel-count">0</span></div><div class="channel-list" id="tv-channels"><div class="empty-state">Your saved TV channels will appear here.</div></div></aside>
         </div>
       </section>
 

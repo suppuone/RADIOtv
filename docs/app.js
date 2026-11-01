@@ -34,6 +34,7 @@
   let tvStations = [];
   let showingRadioFavorites = false;
   let showingTVFavorites = false;
+  let tvFilterTouched = false;
   let currentRadio = null;
   let currentTV = null;
   let hls = null;
@@ -53,6 +54,7 @@
   };
   const radioFavorites = readStore('coolmag.radio.favorites.v1');
   const tvFavorites = readStore('coolmag.tv.favorites.v1');
+  showingTVFavorites = Object.keys(tvFavorites).length > 0;
   const persist = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch { toast('This browser could not save favorites.'); } };
   const toast = (message) => {
     const node = $('toast'); node.textContent = message; node.classList.add('show');
@@ -124,6 +126,7 @@
   }
 
   function setView(view) {
+    if(view==='tv')showingTVFavorites=Object.keys(tvFavorites).length>0;
     document.querySelectorAll('.side-link').forEach(button=>button.classList.toggle('active',button.dataset.view===view||(view==='playlists'&&button.dataset.action==='playlists')));
     document.querySelectorAll('.view-panel').forEach(panel => panel.classList.toggle('active', panel.id === `${view}-view`));
     const titles={home:'Your media, in one place',radio:'World Radio',tv:'Live TV',schedule:'Schedule & queue',favorites:'Your favorites',playlists:'TV playlists',news:'News & magazines'};
@@ -133,6 +136,7 @@
     if(view==='news'){if(currentRadio){radioAudio.pause();radioAudio.removeAttribute('src');radioAudio.load();currentRadio=null;}if(currentTV)stopTV();}
     if(!activeMedia()){$('playing-title').textContent='COOLmagRaTv';$('playing-subtitle').textContent='Choose a stream to begin';}
     if(view==='favorites')renderFavorites();
+    if(view==='tv')renderTV();
     renderSchedule();
     $('sidebar').classList.remove('open');
     syncTransport();
@@ -141,6 +145,28 @@
   document.querySelectorAll('[data-action="playlists"]').forEach(button=>button.addEventListener('click',()=>setView('playlists')));
   document.querySelectorAll('[data-home-link]').forEach(link=>link.addEventListener('click',event=>{event.preventDefault();setView('home');}));
   $('menu-button').addEventListener('click',()=> $('sidebar').classList.toggle('open'));
+  $('landscape-button').addEventListener('click',async()=>{
+    const button=$('landscape-button');
+    if(document.fullscreenElement){
+      try{screen.orientation?.unlock?.();}catch{}
+      try{await document.exitFullscreen();}catch{}
+      return;
+    }
+    try{await document.documentElement.requestFullscreen();}catch{}
+    try{
+      await screen.orientation.lock('landscape');
+      toast('Landscape player view is on.');
+    }catch{
+      toast('Rotate your phone sideways for the landscape player view.');
+    }
+    button.setAttribute('aria-label','Exit landscape fullscreen');
+  });
+  document.addEventListener('fullscreenchange',()=>{
+    const button=$('landscape-button');
+    const active=Boolean(document.fullscreenElement);
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-label',active?'Exit landscape fullscreen':'Enter landscape fullscreen');
+  });
   document.querySelectorAll('[data-genre]').forEach(button=>button.addEventListener('click',()=>{activeGenre=button.dataset.genre;document.querySelectorAll('[data-genre]').forEach(chip=>chip.classList.toggle('active',chip===button));renderHomeTV();}));
   document.querySelectorAll('[data-region]').forEach(button=>button.addEventListener('click',()=>{activeRegion=button.dataset.region;document.querySelectorAll('[data-region]').forEach(chip=>chip.classList.toggle('active',chip===button));renderHomeTV();}));
   $('settings-button').addEventListener('click',()=>toast('Volume and playback controls are in the player dock.'));
@@ -204,6 +230,7 @@
     }));
     updateFavoriteCounts();
     if (showingRadioFavorites) renderRadio();
+    if (!tvFilterTouched && Object.keys(tvFavorites).length) showingTVFavorites = true;
     if (showingTVFavorites) renderTV();
     renderHomeRadio();renderHomeTV();renderFavorites();renderSchedule();
   }
@@ -379,6 +406,7 @@
   function tvKey(station) { return station.url; }
   function toggleTVFavorite(station) {
     const key=tvKey(station); if(tvFavorites[key])delete tvFavorites[key];else tvFavorites[key]=station;
+    if(!Object.keys(tvFavorites).length)showingTVFavorites=false;
     persist('coolmag.tv.favorites.v1',tvFavorites);updateFavoriteCounts();renderTV();updateTVStar();
   }
   function updateTVStar() {
@@ -440,22 +468,31 @@
     const source=$('tv-source').value;const file=source==='index'?'index.m3u':`${source.toLowerCase()}.m3u`;
     tvLoadController?.abort();const controller=new AbortController();tvLoadController=controller;
     const button=$('load-tv');button.disabled=true;button.textContent='Loading…';
-    tvStations=[];showingTVFavorites=false;
-    $('tv-channels').innerHTML='<div class="empty-state">Scanning playlist and selecting 20 random channels across countries…</div>';$('tv-channel-count').textContent='…';renderHomeTV();
+    tvStations=[];showingTVFavorites=Object.keys(tvFavorites).length>0;
+    if(showingTVFavorites)renderTV();else $('tv-channels').innerHTML='<div class="empty-state">Scanning playlist and selecting 20 random channels across countries…</div>';
+    $('tv-channel-count').textContent=showingTVFavorites?Object.keys(tvFavorites).length.toLocaleString():'…';renderHomeTV();
     try{
       const response=await fetch(IPTV_BASE+file,{cache:'no-cache',signal:controller.signal});if(!response.ok)throw new Error(`Playlist could not be fetched (${response.status}).`);
-      tvStations=await samplePlaylist(response,20,count=>{$('tv-channel-count').textContent=count?`${count.toLocaleString()} scanned`:'…';});
-      renderTV();$('tv-channel-count').textContent=tvStations.length.toLocaleString();toast(`Loaded ${tvStations.length} random channels from across the playlist`);
+      tvStations=await samplePlaylist(response,20,count=>{if(!showingTVFavorites)$('tv-channel-count').textContent=count?`${count.toLocaleString()} scanned`:'…';});
+      renderTV();toast(`Loaded ${tvStations.length} random channels from across the playlist`);
     }catch(error){if(error.name==='AbortError')return;tvStations=[];$('tv-channel-count').textContent='0';$('tv-channels').innerHTML=`<div class="empty-state">${safe(error.message)} Check the connection or select another playlist.</div>`;renderHomeTV();}
     finally{if(tvLoadController===controller){tvLoadController=null;button.disabled=false;button.textContent='Load channels';}}
   }
   function filteredTV() {
     const rows=showingTVFavorites?Object.values(tvFavorites):tvStations;const term=$('tv-search').value.trim().toLowerCase();
-    return rows.filter(row=>!term||String(row.name||'').toLowerCase().includes(term)||String(row.group||'').toLowerCase().includes(term)).slice(0,120);
+    const filtered=rows.filter(row=>!term||String(row.name||'').toLowerCase().includes(term)||String(row.group||'').toLowerCase().includes(term));
+    return showingTVFavorites?filtered:filtered.slice(0,120);
   }
   function renderTV() {
     const rows=filteredTV();const list=$('tv-channels');
-    if(!rows.length){list.innerHTML='<div class="empty-state">No matching channels. Try another search or playlist.</div>';renderHomeTV();renderFavorites();return;}
+    const favoritesFirst=showingTVFavorites&&Object.keys(tvFavorites).length>0;
+    $('tv-channel-count').textContent=rows.length.toLocaleString();
+    $('tv-view').classList.toggle('favorites-first',favoritesFirst&&!currentTV);
+    $('tv-favorites-button').classList.toggle('active',showingTVFavorites);
+    $('tv-favorites-button').innerHTML=`${showingTVFavorites?'★ Your favorites':'♡ Favorites'} <span class="count-pill" id="tv-favorite-count">${Object.keys(tvFavorites).length}</span>`;
+    $('tv-list-eyebrow').textContent=showingTVFavorites?'YOUR TV FAVORITES':'CHANNEL GUIDE';
+    $('tv-list-title').textContent=showingTVFavorites?'Favorite channels':'Live TV';
+    if(!rows.length){list.innerHTML=showingTVFavorites?'<div class="empty-state">No TV favorites saved yet. Star channels to keep them here.</div>':'<div class="empty-state">No matching channels. Choose a playlist or adjust your search.</div>';renderHomeTV();renderFavorites();return;}
     list.innerHTML=rows.map(row=>`<article class="home-channel tv-channel ${currentTV&&currentTV.url===row.url?'active':''}" data-tv-url="${safe(row.url)}" tabindex="0" role="button"><div class="channel-art">${row.logo?`<img src="${safe(row.logo)}" loading="lazy" alt="" onerror="this.style.display='none'">`:'<span>▣</span>'}<i>LIVE</i></div><button class="tile-star ${tvFavorites[tvKey(row)]?'is-favorite':''}" data-tv-star="${safe(row.url)}" aria-label="Toggle favorite">${tvFavorites[tvKey(row)]?'★':'☆'}</button><b>${safe(row.name)}</b><small>${safe(row.group||'Live television')}</small></article>`).join('');
     list.querySelectorAll('.tv-channel').forEach(item=>{const row=rows.find(candidate=>candidate.url===item.dataset.tvUrl);item.addEventListener('click',event=>{if(event.target.closest('[data-tv-star]'))return;playTV(row);});item.addEventListener('keydown',event=>{if(event.key==='Enter'){playTV(row);}});});
     list.querySelectorAll('[data-tv-star]').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();const row=rows.find(candidate=>candidate.url===button.dataset.tvStar);if(row)toggleTVFavorite(row);}));
@@ -505,7 +542,7 @@
   $('load-tv').addEventListener('click',loadTV);$('tv-search').addEventListener('input',renderTV);
   $('tv-source').addEventListener('change',loadTV);
   $('tv-fullscreen').addEventListener('click',toggleTVFullView);
-  $('tv-favorites-button').addEventListener('click',()=>{showingTVFavorites=!showingTVFavorites;renderTV();if(showingTVFavorites)toast(`${Object.keys(tvFavorites).length} saved TV favorites`);});
+  $('tv-favorites-button').addEventListener('click',()=>{if(!Object.keys(tvFavorites).length){toast('Star a TV channel to save your first favorite.');return;}tvFilterTouched=true;showingTVFavorites=!showingTVFavorites;renderTV();if(showingTVFavorites)toast(`${Object.keys(tvFavorites).length} saved TV favorites`);});
   $('tv-current-favorite').addEventListener('click',()=>{if(currentTV)toggleTVFavorite(currentTV);});
   $('pip-toggle').addEventListener('click',async()=>{if(!currentTV){toast('Start a TV channel first.');return;}try{if(document.pictureInPictureElement)await document.exitPictureInPicture();else if(tvVideo.requestPictureInPicture)await tvVideo.requestPictureInPicture();else toast('Picture in picture is not supported by this browser.');}catch{toast('Picture in picture is unavailable for this stream.');}});
   $('cast-toggle').addEventListener('click',async()=>{if(!currentTV){toast('Start a TV channel first.');return;}try{if(tvVideo.remote?.prompt)await tvVideo.remote.prompt();else if(tvVideo.webkitShowPlaybackTargetPicker)tvVideo.webkitShowPlaybackTargetPicker();else toast('Casting is not supported by this browser.');}catch{toast('No cast device is available.');}});
