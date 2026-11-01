@@ -135,16 +135,12 @@ class SurakMediaCenterPi5(tk.Tk):
                 installed_commit = version_file.read_text(encoding="ascii").strip()
             except OSError:
                 installed_commit = ""
-            favorites_version_file = app_dir / ".github_favorites_sha"
-            try:
-                favorites_commit = favorites_version_file.read_text(encoding="ascii").strip()
-            except OSError:
-                favorites_commit = ""
             update_code = installed_commit != commit
-            update_favorites = favorites_commit != commit
-            if not update_code and not update_favorites:
-                self._update_events.put(("current", None))
-                return
+            # Always re-check these small files. Favorites can change locally
+            # or a previous interrupted update can leave the version marker
+            # ahead of the actual favorites data.
+            update_favorites = True
+            favorites_version_file = app_dir / ".github_favorites_sha"
 
             staging_root = Path(tempfile.mkdtemp(prefix=".radio-update-", dir=str(app_dir)))
             staged_dir = staging_root / "new"
@@ -153,6 +149,7 @@ class SurakMediaCenterPi5(tk.Tk):
             backup_dir.mkdir()
             files_to_fetch = ((*UPDATE_FILES,) if update_code else ()) + (
                 (*FAVORITE_FILES,) if update_favorites else ())
+            files_to_apply = list(UPDATE_FILES if update_code else ())
             favorites_added = 0
             for name in files_to_fetch:
                 url = f"{GITHUB_RAW_BASE}/{commit}/{name}"
@@ -179,14 +176,22 @@ class SurakMediaCenterPi5(tk.Tk):
                             merged_data[key] = {**local_value, **remote_value}
                         else:
                             merged_data[key] = remote_value
+                    if merged_data == local_data:
+                        continue
                     data = json.dumps(merged_data, ensure_ascii=False, indent=2).encode("utf-8")
                 (staged_dir / name).write_bytes(data)
+                files_to_apply.append(name)
+
+            favorite_changes = any(name in FAVORITE_FILES for name in files_to_apply)
+            if not update_code and not favorite_changes:
+                self._update_events.put(("current", None))
+                return
 
             replaced = []
             try:
                 # Only replace files that were actually downloaded into the
                 # staging folder. A favorites-only sync has no app files there.
-                for name in files_to_fetch:
+                for name in files_to_apply:
                     destination = app_dir / name
                     backup = backup_dir / name
                     if destination.exists():
