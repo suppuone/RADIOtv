@@ -267,8 +267,23 @@
     list.querySelectorAll('.channel-row').forEach(item=>{const row=rows.find(candidate=>candidate.url===item.dataset.tvUrl);item.addEventListener('click',event=>{if(event.target.closest('[data-tv-star]'))return;playTV(row);});item.addEventListener('keydown',event=>{if(event.key==='Enter'){playTV(row);}});});
     list.querySelectorAll('[data-tv-star]').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();const row=rows.find(candidate=>candidate.url===button.dataset.tvStar);if(row)toggleTVFavorite(row);}));
   }
+  function requestMobileTVLandscape() {
+    if (!window.matchMedia('(max-width:760px)').matches) return;
+    const stage=$('video-stage');
+    if (document.fullscreenElement===stage) return;
+    if (typeof stage.requestFullscreen!=='function') {
+      toast('Turn your phone sideways for the landscape TV view.');
+      return;
+    }
+    stage.requestFullscreen().then(()=>{
+      if (screen.orientation?.lock) {
+        return screen.orientation.lock('landscape').catch(()=>toast('Turn your phone sideways for landscape TV.'));
+      }
+      toast('Turn your phone sideways for the landscape TV view.');
+    }).catch(()=>toast('Turn your phone sideways for the landscape TV view.'));
+  }
   function playTV(station) {
-    if(!station?.url)return;radioAudio.pause();$('play-pause').textContent='▶';currentTV=station;
+    if(!station?.url)return;requestMobileTVLandscape();radioAudio.pause();$('play-pause').textContent='▶';currentTV=station;
     if(hls){hls.destroy();hls=null;}tvVideo.pause();tvVideo.removeAttribute('src');tvVideo.load();
     $('video-stage').querySelector('.video-placeholder').classList.add('hidden');$('tv-now-playing').textContent=station.name;
     $('playing-title').textContent=station.name;$('playing-subtitle').textContent=`LIVE TV · ${station.group}`;
