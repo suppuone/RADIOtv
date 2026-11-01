@@ -7,9 +7,9 @@
   <meta name="description" content="COOLmagRaTv — internet radio and live television in one simple media center.">
   <title>COOLmagRaTv · Internet Radio & Live TV</title>
   <link rel="preconnect" href="https://de1.api.radio-browser.info">
-  <link rel="stylesheet" href="style.css?v=20261101-font-plus-2pt">
+  <link rel="stylesheet" href="style.css?v=20261101-remove-playlist-schedule-pages">
   <script defer src="https://cdn.jsdelivr.net/npm/hls.js@1.5.18/dist/hls.min.js"></script>
-  <script defer src="app.js?v=20261101-tv-favorites-mobile-sync"></script>
+  <script defer src="app.js?v=20261101-remove-playlist-schedule-pages"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -22,9 +22,8 @@
         <button class="side-link active" data-view="home"><span>⌂</span>Home</button>
         <button class="side-link" data-view="tv"><span>▣</span>Live TV</button>
         <button class="side-link" data-view="radio"><span>◉</span>Radio</button>
-        <button class="side-link" data-view="schedule"><span>◷</span>Schedule (EPG)</button>
+        <button class="side-link" data-view="recent"><span>◷</span>Recently played</button>
         <button class="side-link" data-view="favorites"><span>♡</span>Favorites <i id="sidebar-favorite-count">0</i></button>
-        <button class="side-link" data-action="playlists"><span>▤</span>Playlists</button>
       </nav>
       <div class="sidebar-filters">
         <span class="sidebar-label">TV GENRE</span>
@@ -44,7 +43,7 @@
     <header class="topbar">
       <button class="menu-button" id="menu-button" aria-label="Open navigation">☰</button>
       <div class="page-heading"><span class="eyebrow">COOLMAG MEDIA</span><h1 id="section-title">Your media, in one place</h1></div>
-      <div class="topbar-right"><button class="landscape-button" id="landscape-button" aria-label="Enter landscape fullscreen" title="Landscape view">⛶ <span>LANDSCAPE</span></button><div class="header-clock"><span id="local-time">--:--</span><small id="local-date">LOCAL TIME</small></div><span class="online-pill"><i></i> ONLINE</span></div>
+      <div class="topbar-right"><button class="landscape-button" id="landscape-button" aria-label="Enter landscape fullscreen" title="Landscape view">⛶</button><div class="header-clock"><span id="local-time">--:--</span><small id="local-date">LOCAL TIME</small></div><span class="online-pill"><i></i> ONLINE</span></div>
     </header>
 
     <main id="main-content">
@@ -53,13 +52,14 @@
           <div class="dashboard-main">
             <article class="hero-card">
               <div class="hero-backdrop" aria-hidden="true"><div class="hero-orb"></div><div class="hero-lines"></div></div>
-              <div class="hero-copy"><span class="live-label"><i></i> LIVE TELEVISION</span><h2 id="hero-title">Your world, live.</h2><p id="hero-subtitle">Browse a channel playlist and start watching in one tap.</p><div class="hero-actions"><button class="watch-button" id="hero-watch">▶ &nbsp;WATCH LIVE</button><span class="quality-badge" id="hero-quality">AUTO STREAM</span></div></div>
-              <div class="hero-preview" id="hero-preview"><img id="hero-logo" alt="Featured channel logo"><span id="hero-preview-label">FEATURED CHANNEL</span></div>
+              <video class="hero-tv-video" id="home-tv-preview" autoplay muted playsinline aria-label="BBC News live preview"></video>
+              <div class="hero-copy"><span class="live-label"><i></i> BBC NEWS · LIVE</span><h2 id="hero-title">BBC News South Asia</h2><p id="hero-subtitle">Live BBC News preview · South Asia feed.</p><div class="hero-actions"><button class="watch-button" id="hero-watch">▶ &nbsp;WATCH LIVE</button><button class="preview-sound-button" id="home-preview-sound" aria-label="Unmute BBC preview" title="Unmute preview">🔇</button><span class="quality-badge" id="hero-quality">LIVE STREAM</span></div></div>
+              <div class="hero-preview" id="hero-preview"><strong class="bbc-wordmark">BBC</strong><span id="hero-preview-label">WORLD NEWS</span></div>
             </article>
 
             <section class="dashboard-section tv-home-section">
               <div class="section-heading"><div><span class="eyebrow">ON AIR NOW</span><h2>Live TV channels</h2></div><button class="text-button" data-view="tv">Browse all <span>→</span></button></div>
-              <div class="home-tv-grid" id="home-tv-grid"><div class="empty-state">Load a playlist to see channels here.<button class="button primary" data-action="playlists">Choose playlist</button></div></div>
+              <div class="home-tv-grid" id="home-tv-grid"><div class="empty-state">Choose a channel source in Live TV to browse channels.<button class="button primary" data-home-playlists>Open Live TV</button></div></div>
             </section>
 
             <section class="schedule-strip">
@@ -72,7 +72,7 @@
 
           <aside class="dashboard-radio">
             <div class="section-heading"><div><span class="eyebrow">TUNE IN</span><h2>Radio stations</h2></div><button class="text-button" data-view="radio">Browse <span>→</span></button></div>
-            <div class="radio-tile-grid" id="home-radio-grid"><div class="empty-state">Finding radio stations…</div></div>
+            <div class="home-tv-grid home-radio-grid" id="home-radio-grid"><div class="empty-state">Finding radio stations…</div></div>
             <div class="dashboard-weather"><div><span class="eyebrow">LOCAL WEATHER</span><b id="home-weather-place">India</b></div><span id="home-weather-temperature">--°</span><small id="home-weather-summary">Weather follows the selected radio country.</small></div>
           </aside>
         </div>
@@ -93,19 +93,17 @@
       </section>
 
       <section class="view-panel" id="tv-view" aria-label="Live TV">
-        <div class="view-toolbar"><label class="searchbox"><span>⌕</span><input id="tv-search" type="search" placeholder="Search channels…" autocomplete="off"></label><button class="button ghost" id="tv-favorites-button">♡ Favorites <span class="count-pill" id="tv-favorite-count">0</span></button><button class="button ghost" data-action="playlists">Playlists</button></div>
+        <div class="view-toolbar"><label class="searchbox"><span>⌕</span><input id="tv-search" type="search" placeholder="Search channels…" autocomplete="off"></label><label class="select-wrap"><span>SOURCE</span><select id="tv-source"><option value="index">Worldwide</option><option value="country/IN">India</option><option value="category/news">News</option><option value="category/music">Music</option><option value="category/sports">Sports</option></select></label><button class="button primary" id="load-tv">Load channels</button><button class="button ghost" id="tv-favorites-button">♡ Favorites <span class="count-pill" id="tv-favorite-count">0</span></button></div>
         <div class="orientation-hint">For the best TV view, turn your phone sideways.</div>
         <div class="tv-layout">
-          <article class="video-card"><div class="video-stage" id="video-stage"><div class="video-placeholder"><span class="play-orb">▶</span><b>Choose a channel</b><small>Compatible live streams play here.</small></div><video id="tv-player" controls playsinline></video></div><div class="video-meta"><div class="tv-playing-title"><span class="eyebrow">NOW PLAYING</span><h2 id="tv-now-playing">No channel selected</h2></div><button class="star-button" id="tv-current-favorite" title="Add to favorites" aria-label="Add current channel to favorites">♡</button></div><p class="stream-note" id="tv-note">Streams are provided by their broadcasters.</p></article>
+          <article class="video-card"><div class="video-stage" id="video-stage"><div class="video-placeholder"><span class="play-orb">▶</span><b>Choose a channel</b><small>Compatible live streams play here.</small></div><video id="tv-player" controls playsinline></video><div class="video-fullscreen-controls" role="group" aria-label="Full-screen TV controls"><button id="tv-full-home" aria-label="Go to Home" title="Home">⌂</button><button id="tv-full-previous" aria-label="Previous favorite channel" title="Previous favorite">⏮</button><button id="tv-full-toggle" class="fullscreen-play" aria-label="Play TV" title="Play / pause">▶</button><button id="tv-full-next" aria-label="Next favorite channel" title="Next favorite">⏭</button></div></div><div class="video-meta"><div class="tv-playing-title"><span class="eyebrow">NOW PLAYING</span><h2 id="tv-now-playing">No channel selected</h2></div><button class="star-button" id="tv-current-favorite" title="Add to favorites" aria-label="Add current channel to favorites">♡</button></div><p class="stream-note" id="tv-note">Streams are provided by their broadcasters.</p></article>
           <aside class="channel-card"><div class="section-heading"><div><span class="eyebrow" id="tv-list-eyebrow">YOUR TV FAVORITES</span><h2 id="tv-list-title">Live TV</h2></div><span class="count-pill" id="tv-channel-count">0</span></div><div class="channel-list" id="tv-channels"><div class="empty-state">Your saved TV channels will appear here.</div></div></aside>
         </div>
       </section>
 
-      <section class="view-panel" id="schedule-view" aria-label="Schedule and electronic program guide"><div class="page-intro"><span class="eyebrow">SCHEDULE</span><h2>Now Playing & Up Next</h2><p>Broadcaster EPG data is not included in every playlist. This view uses your current selection and saved favorites.</p></div><div class="schedule-page"><article><span class="eyebrow">NOW PLAYING</span><h3 id="schedule-page-now">Nothing playing</h3><p id="schedule-page-now-meta">Choose a radio station or TV channel.</p></article><article><span class="eyebrow">UP NEXT · FAVORITES</span><h3 id="schedule-page-next">No next favorite</h3><p id="schedule-page-next-meta">Save favorites to build your queue.</p></article></div></section>
-
       <section class="view-panel" id="favorites-view" aria-label="Favorites"><div class="page-intro"><span class="eyebrow">YOUR LIBRARY</span><h2>Favorites</h2><p>Your saved radio stations and TV channels.</p></div><section class="dashboard-section"><div class="section-heading"><h2>Radio</h2></div><div class="station-grid" id="favorite-radio-grid"></div></section><section class="dashboard-section"><div class="section-heading"><h2>Live TV</h2></div><div class="favorite-tv-grid" id="favorite-tv-grid"></div></section></section>
 
-      <section class="view-panel" id="playlists-view" aria-label="TV playlists"><div class="page-intro"><span class="eyebrow">CHANNEL SOURCES</span><h2>Playlists</h2><p>Select a public IPTV playlist. Channel availability depends on the source and broadcaster.</p></div><div class="playlist-picker"><label class="select-wrap"><span>PLAYLIST</span><select id="tv-source"><option value="index">Worldwide</option><option value="country/IN">India</option><option value="category/news">News</option><option value="category/music">Music</option><option value="category/sports">Sports</option></select></label><button class="button primary" id="load-tv">Load channels</button></div><div class="playlist-note">The guide keeps 20 randomly selected channels, spread across country tags when available.</div></section>
+      <section class="view-panel" id="recent-view" aria-label="Recently played"><div class="page-intro"><span class="eyebrow">YOUR HISTORY</span><h2>Recently played</h2><p>Pick up where you left off with recent radio stations and TV channels.</p></div><section class="dashboard-section"><div class="section-heading"><h2>Radio</h2></div><div class="favorite-tv-grid recent-grid" id="recent-radio-grid"></div></section><section class="dashboard-section"><div class="section-heading"><h2>Live TV</h2></div><div class="favorite-tv-grid recent-grid" id="recent-tv-grid"></div></section></section>
 
       <section class="view-panel" id="news-view" aria-label="News and magazines"><div class="page-intro"><span class="eyebrow">READ FROM THE SOURCE</span><h2>News & Magazines</h2><p>Open publishers directly in a new tab.</p></div><div class="news-grid" id="news-grid"></div></section>
     </main>

@@ -7,6 +7,13 @@
     'https://at1.api.radio-browser.info/json'
   ];
   const IPTV_BASE = 'https://iptv-org.github.io/iptv/';
+  const HOME_BBC = {
+    name:'BBC News South Asia (720p)',
+    group:'News · United Kingdom',
+    country:'United Kingdom',
+    url:'https://mumbai-edge.smartplaytv.in/BBCNews/index.m3u8',
+    logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/BBC_News_2022_%28Alt%29.svg/512px-BBC_News_2022_%28Alt%29.svg.png'
+  };
   const NEWS = [
     {name:'BBC News', region:'WORLD', initials:'BBC', url:'https://www.bbc.com/news', detail:'World news, explainers, and live coverage.'},
     {name:'The Hindu', region:'INDIA', initials:'TH', url:'https://www.thehindu.com/', detail:'National reporting, analysis, and opinion.'},
@@ -40,6 +47,8 @@
   let currentRadio = null;
   let currentTV = null;
   let hls = null;
+  let homePreviewHls = null;
+  let homePreviewStarted = false;
   let tvLoadController = null;
   let selectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   let toastTimer = null;
@@ -56,6 +65,8 @@
   };
   const radioFavorites = readStore('coolmag.radio.favorites.v1');
   const tvFavorites = readStore('coolmag.tv.favorites.v1');
+  const readRecent = key => { try { const value=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(value)?value.filter(item=>item&&typeof item==='object'):[]; } catch { return []; } };
+  const recentHistory = {radio:readRecent('coolmag.recent.radio.v1'),tv:readRecent('coolmag.recent.tv.v1')};
   showingTVFavorites = Object.keys(tvFavorites).length > 0;
   const persist = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch { toast('This browser could not save favorites.'); } };
   const toast = (message) => {
@@ -70,6 +81,12 @@
     $('play-pause').textContent=playing?'Ⅱ':'▶';
     $('play-pause').setAttribute('aria-label',playing?'Pause playback':'Play playback');
     $('play-pause').title=playing?'Pause playback':'Play playback';
+    const tvPlaying=Boolean(currentTV&&!tvVideo.paused&&!tvVideo.ended);
+    $('tv-full-toggle').textContent=tvPlaying?'Ⅱ':'▶';
+    $('tv-full-toggle').setAttribute('aria-label',tvPlaying?'Pause TV':'Play TV');
+    $('tv-full-toggle').disabled=!currentTV;
+    $('tv-full-previous').disabled=!Object.keys(tvFavorites).length;
+    $('tv-full-next').disabled=!Object.keys(tvFavorites).length;
     const tvMode=$('tv-view').classList.contains('active')||Boolean(currentTV);
     const favorites=tvMode?Object.keys(tvFavorites).length:Object.keys(radioFavorites).length;
     $('previous-favorite').disabled=favorites===0;
@@ -110,6 +127,31 @@
     const next=list[(index+direction+list.length)%list.length];
     if(tvMode)playTV(next);else playRadio(next);
   }
+  function startHomePreview() {
+    const preview=$('home-tv-preview');
+    if(homePreviewStarted){preview.play().catch(()=>{});return;}
+    homePreviewStarted=true;
+    preview.muted=true;
+    preview.volume=Number($('volume').value);
+    if(window.Hls&&Hls.isSupported()){
+      homePreviewHls=new Hls({enableWorker:true,lowLatencyMode:false,maxBufferLength:8});
+      homePreviewHls.loadSource(HOME_BBC.url);
+      homePreviewHls.attachMedia(preview);
+      homePreviewHls.on(Hls.Events.MANIFEST_PARSED,()=>preview.play().catch(()=>{}));
+      homePreviewHls.on(Hls.Events.ERROR,(_event,data)=>{if(data.fatal)$('hero-subtitle').textContent='BBC preview unavailable right now · Select WATCH LIVE to retry.';});
+      return;
+    }
+    if(preview.canPlayType('application/vnd.apple.mpegurl')){
+      preview.src=HOME_BBC.url;
+      preview.play().catch(()=>{});
+    }else $('hero-subtitle').textContent='BBC News · Select WATCH LIVE to open the live channel.';
+  }
+  function stopHomePreview() {
+    const preview=$('home-tv-preview');
+    if(homePreviewHls){homePreviewHls.destroy();homePreviewHls=null;}
+    if(preview){preview.pause();preview.removeAttribute('src');preview.load();}
+    homePreviewStarted=false;
+  }
   function seekActive(seconds) {
     const media=activeMedia();
     if(!media){toast('Choose a station or channel first.');return;}
@@ -132,22 +174,27 @@
       showingTVFavorites=Object.keys(tvFavorites).length>0||!sharedTVFavoritesLoaded;
       if(!sharedTVFavoritesLoaded)loadSharedFavorites();
     }
-    document.querySelectorAll('.side-link').forEach(button=>button.classList.toggle('active',button.dataset.view===view||(view==='playlists'&&button.dataset.action==='playlists')));
+    if(view==='home'){
+      if(currentTV)stopTV();
+      if(currentRadio){radioAudio.pause();radioAudio.removeAttribute('src');radioAudio.load();currentRadio=null;}
+      startHomePreview();
+    }else stopHomePreview();
+    document.querySelectorAll('.side-link').forEach(button=>button.classList.toggle('active',button.dataset.view===view));
     document.querySelectorAll('.view-panel').forEach(panel => panel.classList.toggle('active', panel.id === `${view}-view`));
-    const titles={home:'Your media, in one place',radio:'World Radio',tv:'Live TV',schedule:'Schedule & queue',favorites:'Your favorites',playlists:'TV playlists',news:'News & magazines'};
+    const titles={home:'Your media, in one place',radio:'World Radio',tv:'Live TV',recent:'Recently played',favorites:'Your favorites',news:'News & magazines'};
     $('section-title').textContent=titles[view]||'COOLmagRaTv';
     if(view==='tv'&&currentRadio){radioAudio.pause();radioAudio.removeAttribute('src');radioAudio.load();currentRadio=null;}
     if(view==='radio'&&currentTV)stopTV();
     if(view==='news'){if(currentRadio){radioAudio.pause();radioAudio.removeAttribute('src');radioAudio.load();currentRadio=null;}if(currentTV)stopTV();}
     if(!activeMedia()){$('playing-title').textContent='COOLmagRaTv';$('playing-subtitle').textContent='Choose a stream to begin';}
     if(view==='favorites')renderFavorites();
+    if(view==='recent')renderRecent();
     if(view==='tv')renderTV();
     renderSchedule();
     $('sidebar').classList.remove('open');
     syncTransport();
   }
   document.querySelectorAll('.side-link[data-view],.text-button[data-view]').forEach(button=>button.addEventListener('click',()=>setView(button.dataset.view)));
-  document.querySelectorAll('[data-action="playlists"]').forEach(button=>button.addEventListener('click',()=>setView('playlists')));
   document.querySelectorAll('[data-home-link]').forEach(link=>link.addEventListener('click',event=>{event.preventDefault();setView('home');}));
   $('menu-button').addEventListener('click',()=> $('sidebar').classList.toggle('open'));
   $('landscape-button').addEventListener('click',async()=>{
@@ -175,7 +222,16 @@
   document.querySelectorAll('[data-genre]').forEach(button=>button.addEventListener('click',()=>{activeGenre=button.dataset.genre;document.querySelectorAll('[data-genre]').forEach(chip=>chip.classList.toggle('active',chip===button));renderHomeTV();}));
   document.querySelectorAll('[data-region]').forEach(button=>button.addEventListener('click',()=>{activeRegion=button.dataset.region;document.querySelectorAll('[data-region]').forEach(chip=>chip.classList.toggle('active',chip===button));renderHomeTV();}));
   $('settings-button').addEventListener('click',()=>toast('Volume and playback controls are in the player dock.'));
-  $('hero-watch').addEventListener('click',()=>{if(tvStations.length){setView('tv');playTV(tvStations[0]);}else setView('playlists');});
+  $('hero-watch').addEventListener('click',()=>{setView('tv');playTV(HOME_BBC);});
+  $('home-preview-sound').addEventListener('click',()=>{
+    const preview=$('home-tv-preview');
+    if(!homePreviewStarted)startHomePreview();
+    preview.muted=!preview.muted;
+    $('home-preview-sound').textContent=preview.muted?'🔇':'🔊';
+    $('home-preview-sound').setAttribute('aria-label',preview.muted?'Unmute BBC preview':'Mute BBC preview');
+    $('home-preview-sound').title=preview.muted?'Unmute preview':'Mute preview';
+    preview.play().catch(()=>toast('BBC preview could not start in this browser.'));
+  });
 
   function showOrigin(countryName, countryCode) {
     $('origin-country').textContent = countryName || 'Selected country';
@@ -328,7 +384,9 @@
     target.innerHTML=rows.map((station,index)=>{
       const key=safe(radioKey(station));const favorite=Boolean(radioFavorites[radioKey(station)]);
       const initials=safe((station.name||'FM').trim().slice(0,2).toUpperCase());
-      return `<article class="radio-tile tile-tone-${index%9}" data-home-radio="${key}" tabindex="0" role="button"><button class="tile-star ${favorite?'is-favorite':''}" data-home-radio-star="${key}" aria-label="Toggle favorite">${favorite?'★':'☆'}</button><span class="tile-wave" aria-hidden="true">♫</span>${station.favicon?`<img class="tile-logo" src="${safe(station.favicon)}" loading="lazy" alt="" onerror="this.style.display='none'">`:`<span class="tile-initials" aria-hidden="true">${initials}</span>`}<b>${safe(station.name||'Radio station')}</b><small>${safe(station.country||'INTERNET RADIO')}</small><span class="tile-quality">${station.bitrate?`${station.bitrate} KBPS`:'LIVE'}</span></article>`;
+      const logo=station.favicon?`<img src="${safe(station.favicon)}" loading="lazy" alt="" onerror="this.style.display='none'">`:`<span>${initials}</span>`;
+      const active=currentRadio&&radioKey(currentRadio)===radioKey(station);
+      return `<article class="home-channel home-radio-channel ${active?'active':''}" data-home-radio="${key}" tabindex="0" role="button" aria-label="Play ${safe(station.name||'Radio station')}"><div class="channel-art">${logo}<i>${active?'ON AIR':'RADIO'}</i></div><button class="tile-star ${favorite?'is-favorite':''}" data-home-radio-star="${key}" aria-label="Toggle favorite">${favorite?'★':'☆'}</button><b>${safe(station.name||'Radio station')}</b><small>${safe(station.country||'Internet radio')}${station.bitrate?` · ${safe(station.bitrate)} KBPS`:''}</small></article>`;
     }).join('');
     target.querySelectorAll('[data-home-radio]').forEach(tile=>{const station=rows.find(item=>radioKey(item)===tile.dataset.homeRadio);tile.addEventListener('click',event=>{if(event.target.closest('[data-home-radio-star]'))return;playRadio(station);});tile.addEventListener('keydown',event=>{if(event.key==='Enter')playRadio(station);});});
     target.querySelectorAll('[data-home-radio-star]').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();const station=rows.find(item=>radioKey(item)===button.dataset.homeRadioStar);if(station)toggleRadioFavorite(station);}));
@@ -345,9 +403,7 @@
   function renderHomeTV() {
     const target=$('home-tv-grid');if(!target)return;
     const rows=homeTVRows().slice(0,6);
-    if(!rows.length){target.innerHTML='<div class="empty-state">Choose a playlist to browse live channels.<button class="button primary" data-home-playlists>Choose playlist</button></div>';target.querySelector('[data-home-playlists]')?.addEventListener('click',()=>setView('playlists'));return;}
-    const featured=rows[0];$('hero-title').textContent=featured.name;$('hero-subtitle').textContent=`${featured.group||'Live channel'} · Select WATCH LIVE to start.`;
-    const logo=$('hero-logo');if(featured.logo){logo.src=featured.logo;logo.style.display='block';}else{logo.removeAttribute('src');logo.style.display='none';}
+    if(!rows.length){target.innerHTML='<div class="empty-state">Choose a channel source in Live TV to browse channels.<button class="button primary" data-home-playlists>Open Live TV</button></div>';target.querySelector('[data-home-playlists]')?.addEventListener('click',()=>{setView('tv');loadTV();});return;}
     target.innerHTML=rows.map(row=>`<article class="home-channel" data-home-tv="${safe(row.url)}" tabindex="0" role="button"><div class="channel-art">${row.logo?`<img src="${safe(row.logo)}" loading="lazy" alt="" onerror="this.style.display='none'">`:'<span>▣</span>'}<i>LIVE</i></div><button class="tile-star ${tvFavorites[tvKey(row)]?'is-favorite':''}" data-home-tv-star="${safe(row.url)}" aria-label="Toggle favorite">${tvFavorites[tvKey(row)]?'★':'☆'}</button><b>${safe(row.name)}</b><small>${safe(row.group||'Live television')}</small></article>`).join('');
     target.querySelectorAll('[data-home-tv]').forEach(card=>{const row=rows.find(item=>item.url===card.dataset.homeTv);card.addEventListener('click',event=>{if(event.target.closest('[data-home-tv-star]'))return;setView('tv');playTV(row);});card.addEventListener('keydown',event=>{if(event.key==='Enter'){setView('tv');playTV(row);}});});
     target.querySelectorAll('[data-home-tv-star]').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();const row=rows.find(item=>item.url===button.dataset.homeTvStar);if(row)toggleTVFavorite(row);}));
@@ -370,10 +426,10 @@
     const active=currentTV||currentRadio;let index=favorites.findIndex(item=>currentTV?item.url===currentTV.url:currentRadio&&radioKey(item)===radioKey(currentRadio));
     const next=favorites.length?favorites[(index+1+favorites.length)%favorites.length]:null;
     const nextName=next?.name||'No next favorite';const nextMeta=next?(next.group||next.country||'Saved favorite'):'Save favorites to build your queue.';
-    ['home-now-title','schedule-page-now'].forEach(id=>$(id).textContent=title);
-    $('home-now-meta').textContent=detail;$('schedule-page-now-meta').textContent=detail;
-    ['home-next-title','schedule-page-next'].forEach(id=>$(id).textContent=nextName);
-    $('home-next-meta').textContent=nextMeta;$('schedule-page-next-meta').textContent=nextMeta;
+    $('home-now-title').textContent=title;
+    $('home-now-meta').textContent=detail;
+    $('home-next-title').textContent=nextName;
+    $('home-next-meta').textContent=nextMeta;
     $('schedule-now-art').textContent=currentTV?'▣':'♫';
   }
   async function searchRadio() {
@@ -400,6 +456,7 @@
   function playRadio(station) {
     const url = station?.url_resolved || station?.url;
     if (!url) { toast('This station has no playable stream URL.'); return; }
+    stopHomePreview();
     stopTV();radioAudio.pause();currentRadio = station;
     radioAudio.src = url; radioAudio.volume = Number($('volume').value);
     $('playing-title').textContent = station.name || 'Internet radio';
@@ -542,7 +599,7 @@
     }).catch(()=>toast('Full view is blocked by this browser. Turn your phone sideways to fit the TV screen.'));
   }
   function playTV(station) {
-    if(!station?.url)return;requestMobileTVLandscape();radioAudio.pause();radioAudio.removeAttribute('src');radioAudio.load();currentRadio=null;currentTV=station;
+    if(!station?.url)return;stopHomePreview();requestMobileTVLandscape();radioAudio.pause();radioAudio.removeAttribute('src');radioAudio.load();currentRadio=null;currentTV=station;
     if(hls){hls.destroy();hls=null;}tvVideo.pause();tvVideo.removeAttribute('src');tvVideo.load();
     $('video-stage').querySelector('.video-placeholder').classList.add('hidden');$('tv-now-playing').textContent=station.name;
     $('playing-title').textContent=station.name;$('playing-subtitle').textContent=`LIVE TV · ${station.group}`;
@@ -559,6 +616,14 @@
   $('load-tv').addEventListener('click',loadTV);$('tv-search').addEventListener('input',renderTV);
   $('tv-source').addEventListener('change',loadTV);
   $('tv-fullscreen').addEventListener('click',toggleTVFullView);
+  $('tv-full-home').addEventListener('click',()=>{
+    if(currentTV)stopTV();
+    setView('home');
+    if(document.fullscreenElement)document.exitFullscreen?.().catch(()=>{});
+  });
+  $('tv-full-previous').addEventListener('click',()=>stepFavorite(-1));
+  $('tv-full-toggle').addEventListener('click',playPauseActive);
+  $('tv-full-next').addEventListener('click',()=>stepFavorite(1));
   $('tv-favorites-button').addEventListener('click',()=>{if(!Object.keys(tvFavorites).length){toast('Star a TV channel to save your first favorite.');return;}tvFilterTouched=true;showingTVFavorites=!showingTVFavorites;renderTV();if(showingTVFavorites)toast(`${Object.keys(tvFavorites).length} saved TV favorites`);});
   $('tv-current-favorite').addEventListener('click',()=>{if(currentTV)toggleTVFavorite(currentTV);});
   $('pip-toggle').addEventListener('click',async()=>{if(!currentTV){toast('Start a TV channel first.');return;}try{if(document.pictureInPictureElement)await document.exitPictureInPicture();else if(tvVideo.requestPictureInPicture)await tvVideo.requestPictureInPicture();else toast('Picture in picture is not supported by this browser.');}catch{toast('Picture in picture is unavailable for this stream.');}});
@@ -572,7 +637,7 @@
   $('play-pause').addEventListener('click',playPauseActive);
   [radioAudio,tvVideo].forEach(media=>['play','pause','progress','loadedmetadata','durationchange','seeked','emptied','timeupdate'].forEach(event=>media.addEventListener(event,syncTransport)));
   setupMediaSession();syncTransport();
-  $('volume').addEventListener('input',()=>{const value=Number($('volume').value);radioAudio.volume=value;tvVideo.volume=value;$('volume-label').textContent=`${Math.round(value*100)}%`;});
+  $('volume').addEventListener('input',()=>{const value=Number($('volume').value);radioAudio.volume=value;tvVideo.volume=value;$('home-tv-preview').volume=value;$('volume-label').textContent=`${Math.round(value*100)}%`;});
   $('add-stream').addEventListener('click',()=>{const url=prompt('Paste a direct radio stream URL (https:// or http://):');if(!url)return;const clean=url.trim();if(!/^https?:\/\//i.test(clean)){toast('Please enter a valid HTTP or HTTPS stream URL.');return;}const name=prompt('Station name:','My station')?.trim()||'My station';const station={stationuuid:`custom:${clean}`,name,url:clean,url_resolved:clean,country:'Custom stream',tags:'Added by you'};radioFavorites[radioKey(station)]=station;persist('coolmag.radio.favorites.v1',radioFavorites);updateFavoriteCounts();toast('Station saved to your favorites.');if(showingRadioFavorites)renderRadio();});
 
   function renderNews(){
@@ -580,6 +645,6 @@
   }
   function updateClock(){try{$('local-time').textContent=new Intl.DateTimeFormat('en-GB',{timeZone:selectedTimezone,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());$('local-date').textContent=new Intl.DateTimeFormat('en',{timeZone:selectedTimezone,weekday:'short',day:'2-digit',month:'short'}).format(new Date()).toUpperCase();}catch{$('local-time').textContent=new Date().toLocaleTimeString();}}
 
-  renderNews();updateFavoriteCounts();updateClock();setInterval(updateClock,1000);loadSharedFavorites();
+  renderNews();updateFavoriteCounts();updateClock();setInterval(updateClock,1000);startHomePreview();loadSharedFavorites();
   loadCountries().then(()=>{const name=$('country-select').selectedOptions[0]?.text||'India';loadWeather(name,$('country-select').value);searchRadio();});
 })();
