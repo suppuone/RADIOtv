@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1118">
+  <meta name="description" content="CoolMag Media Center — listen to internet radio, browse live TV streams, and open trusted news sources.">
+  <title>CoolMag Media Center · World Radio</title>
+  <link rel="preconnect" href="https://de1.api.radio-browser.info">
+  <link rel="stylesheet" href="style.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/hls.js@1.5.18/dist/hls.min.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#home" aria-label="CoolMag Media Center home">
+        <span class="brand-mark" aria-hidden="true">◉</span>
+        <span>COOLMAG <b>MEDIA CENTER</b><small>WORLD RADIO · WEB EDITION</small></span>
+      </a>
+      <nav class="main-nav" aria-label="Main sections">
+        <button class="nav-button active" data-view="radio"><span>◉</span> RADIO MAP</button>
+        <button class="nav-button" data-view="tv"><span>▣</span> LIVE TV</button>
+        <button class="nav-button" data-view="news"><span>▤</span> NEWS & MAGAZINES</button>
+      </nav>
+      <button class="icon-button mobile-menu" id="menu-button" aria-label="Open menu">☰</button>
+    </header>
+
+    <main>
+      <section class="welcome-row">
+        <div>
+          <div class="eyebrow"><i class="live-dot"></i> YOUR WORLD, ON AIR</div>
+          <h1 id="section-title">World Radio</h1>
+          <p id="section-subtitle">Explore stations around the world and tune in instantly.</p>
+        </div>
+        <div class="header-clock"><span id="local-time">--:--:--</span><small id="local-date">LOCAL TIME</small></div>
+      </section>
+
+      <section class="view-panel active" id="radio-view" aria-label="World Radio">
+        <div class="toolbar">
+          <label class="searchbox"><span>⌕</span><input id="radio-search" type="search" placeholder="Search stations, music, or language…" autocomplete="off"></label>
+          <label class="select-wrap"><span>COUNTRY</span><select id="country-select"><option value="IN">India</option></select></label>
+          <button class="button primary" id="radio-search-button">Search</button>
+          <button class="button ghost" id="radio-favorites-button">♡ Favorites <span class="count-pill" id="radio-favorite-count">0</span></button>
+        </div>
+        <div class="radio-grid">
+          <article class="card map-card origin-card">
+            <div class="card-heading"><div><span class="eyebrow">STATION ORIGIN</span><h2>On air from</h2></div><span class="live-tag"><i class="live-dot"></i> LIVE</span></div>
+            <div class="origin-panel"><div class="origin-globe" aria-hidden="true">◎</div><div class="origin-copy"><span>SELECTED COUNTRY</span><b id="origin-country">India</b><small id="origin-code">IN · COUNTRY OF ORIGIN</small></div></div>
+            <div class="origin-caption">The selected station’s country appears here.</div>
+          </article>
+          <article class="card weather-card">
+            <div class="card-heading"><div><span class="eyebrow">LOCAL CONDITIONS</span><h2 id="weather-place">India</h2></div><span class="weather-symbol" id="weather-symbol">☁</span></div>
+            <div class="temperature" id="weather-temperature">--°</div>
+            <div class="weather-summary" id="weather-summary">Weather loads when a country is selected</div>
+            <div class="weather-stats"><span>WIND <b id="weather-wind">--</b></span><span>HUMIDITY <b id="weather-humidity">--</b></span></div>
+          </article>
+        </div>
+        <section class="station-section">
+          <div class="section-heading"><div><span class="eyebrow">DISCOVER</span><h2 id="station-list-title">Popular in India</h2></div><div class="section-actions"><span class="muted" id="radio-status">Loading stations…</span><button class="button small ghost" id="load-more-radio">Refresh</button></div></div>
+          <div class="station-grid" id="radio-stations" aria-live="polite"></div>
+        </section>
+      </section>
+
+      <section class="view-panel" id="tv-view" aria-label="Live TV">
+        <div class="toolbar">
+          <label class="searchbox"><span>⌕</span><input id="tv-search" type="search" placeholder="Search channels…" autocomplete="off"></label>
+          <label class="select-wrap"><span>PLAYLIST</span><select id="tv-source"><option value="index">Worldwide</option><option value="country/IN">India</option><option value="category/news">News</option><option value="category/music">Music</option><option value="category/sports">Sports</option></select></label>
+          <button class="button primary" id="load-tv">Load channels</button>
+          <button class="button ghost" id="tv-favorites-button">♡ Favorites <span class="count-pill" id="tv-favorite-count">0</span></button>
+        </div>
+        <div class="tv-layout">
+          <article class="card video-card">
+            <div class="video-stage" id="video-stage"><div class="video-placeholder"><span class="play-orb">▶</span><b>Choose a channel</b><small>Live streams play in this window when supported by your browser.</small></div><video id="tv-player" controls playsinline></video></div>
+            <div class="video-meta"><div><span class="eyebrow">NOW PLAYING</span><h2 id="tv-now-playing">No channel selected</h2></div><button class="star-button" id="tv-current-favorite" title="Add to favorites" aria-label="Add current channel to favorites">♡</button></div>
+            <p class="stream-note" id="tv-note">Stream availability and formats are controlled by the original broadcaster.</p>
+          </article>
+          <aside class="card channel-card"><div class="card-heading"><div><span class="eyebrow">CHANNEL GUIDE</span><h2>Live TV</h2></div><span class="count-pill" id="tv-channel-count">0</span></div><div class="channel-list" id="tv-channels"><div class="empty-state">Load a playlist to browse channels.</div></div></aside>
+        </div>
+      </section>
+
+      <section class="view-panel" id="news-view" aria-label="News and magazines">
+        <div class="news-intro card"><div><span class="eyebrow">READ FROM THE SOURCE</span><h2>News & magazines</h2><p>Open trusted newsrooms and regional publications directly in a new tab.</p></div><span class="news-emblem">✦</span></div>
+        <div class="news-grid" id="news-grid"></div>
+      </section>
+    </main>
+
+    <footer class="player-bar">
+      <div class="playing-info"><div class="vinyl">◉</div><div class="playing-copy"><b id="playing-title">CoolMag Media Center</b><small id="playing-subtitle">Choose a radio station to begin</small></div></div>
+      <div class="player-controls"><button class="control-button" id="play-pause" aria-label="Play or pause">▶</button><button class="control-button" id="stop-audio" aria-label="Stop playback">■</button><button class="button small ghost" id="add-stream">+ Stream URL</button></div>
+      <label class="volume-control"><span>VOL</span><input id="volume" type="range" min="0" max="1" value="0.8" step="0.01"><b id="volume-label">80%</b></label>
+      <audio id="radio-player" preload="none"></audio>
+    </footer>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="site-footnote">Streams remain hosted by their broadcasters and directory providers. This page does not store or retransmit media.</div>
+  </div>
+</body>
+</html>
