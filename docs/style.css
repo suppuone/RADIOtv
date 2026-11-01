@@ -5,3 +5,37 @@
 @media(max-width:760px){.app-shell{padding:0 13px 150px}.topbar{height:65px}.brand{font-size:13px}.brand-mark{font-size:23px}.main-nav{display:none;position:absolute;z-index:1000;right:13px;top:60px;height:auto;padding:7px;flex-direction:column;align-items:stretch;background:#17232d;border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow)}.main-nav.open{display:flex}.mobile-menu{display:block;width:40px;height:40px;border:1px solid var(--line);border-radius:9px;background:#1b2832;font-size:16px}.welcome-row{padding:21px 1px 16px}.welcome-row p{max-width:260px;line-height:1.45}.header-clock{font-size:13px}.toolbar{flex-wrap:wrap}.searchbox{flex-basis:100%}.select-wrap{flex:1}.select-wrap select{max-width:none;width:100%}.radio-grid,.tv-layout{grid-template-columns:1fr}.map-card{min-height:270px}.map-canvas{height:180px}.weather-card{min-height:230px}.temperature{margin-top:18px;font-size:42px}.weather-stats{margin-top:18px}.station-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.station-card{min-height:130px;padding:12px}.station-card h3{font-size:12px}.section-heading{align-items:flex-start;gap:8px;flex-direction:column}.section-actions{width:100%;justify-content:space-between}.video-stage{height:250px}.channel-card{max-height:360px}.news-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.player-bar{bottom:8px;width:calc(100% - 16px);min-height:72px;padding:9px 10px;gap:8px;flex-wrap:wrap}.playing-info{min-width:0;max-width:calc(100% - 120px);flex:1}.vinyl{width:37px;height:37px}.playing-copy b{font-size:11px}.playing-copy small{font-size:9px}.player-controls{gap:5px}.control-button{width:32px;height:32px}.player-controls .button{display:none}.volume-control{order:3;min-width:100%;gap:7px}.volume-control input{flex:1}.site-footnote{margin-top:20px;font-size:8px}}
 @media(max-width:430px){.news-grid{grid-template-columns:1fr}.station-grid{grid-template-columns:1fr 1fr}.station-card{min-height:126px}.station-card p{font-size:9px}.brand small{font-size:8px}.weather-stats{gap:16px}}
 .origin-panel{height:220px;margin-top:12px;padding:24px;display:flex;align-items:center;gap:20px;position:relative;overflow:hidden;border-radius:10px;background:radial-gradient(ellipse at 18% 55%,#00e67628,transparent 30%),radial-gradient(ellipse at 100% 0,#1680a12e,transparent 58%),linear-gradient(125deg,#0d1820,#10242d 64%,#10191f)}.origin-panel:after{content:"";position:absolute;left:-8%;right:-8%;bottom:-72px;height:145px;border:1px solid #59c9a222;border-radius:50%;box-shadow:0 -13px 0 #59c9a210,0 -27px 0 #59c9a20c,0 -42px 0 #59c9a208;transform:rotate(-5deg)}.origin-globe{width:92px;height:92px;flex:none;display:grid;place-items:center;border:1px solid #6ee5b355;border-radius:50%;background:radial-gradient(circle at 40% 38%,#21434b,#0c191f 70%);color:#78edbd;font-size:58px;box-shadow:0 0 44px #00e67620,inset 0 0 22px #00e67610}.origin-copy{position:relative;z-index:1}.origin-copy span,.origin-copy small{display:block;color:#81959e;font-size:9px;font-weight:700;letter-spacing:.16em}.origin-copy b{display:block;margin:8px 0 6px;color:#f3f7f5;font:800 clamp(22px,3vw,32px) 'Manrope',sans-serif}.origin-copy small{color:#68dda6;font-size:10px}.origin-caption{margin-top:10px;color:#81949d;font-size:10px}
+@media(max-width:760px){
+  .brand{font-size:18px}.brand small{font-size:14px}
+  .eyebrow{font-size:17px;letter-spacing:.1em}
+  .welcome-row h1{font-size:38px}.welcome-row p{font-size:19px}
+  .header-clock{font-size:20px}.header-clock small{font-size:14px}
+  .nav-button{font-size:18px;min-height:48px}
+  .searchbox{height:50px}.searchbox input{font-size:20px}
+  .select-wrap{height:50px}.select-wrap span{font-size:14px}.select-wrap select{font-size:18px}
+  .button{height:48px;font-size:18px;padding:0 12px}.button.small{height:42px;font-size:16px}
+  .count-pill{min-width:28px;height:27px;font-size:15px}
+  .card-heading h2,.section-heading h2{font-size:25px}
+  .live-tag{font-size:15px}
+  .origin-copy span{font-size:15px}.origin-copy b{font-size:30px}.origin-copy small{font-size:16px}.origin-caption{font-size:17px}
+  .weather-summary{font-size:18px}.weather-stats span{font-size:14px}.weather-stats b{font-size:19px}
+  .station-card{min-height:150px;padding:14px}.station-card h3{font-size:21px}.station-card p{font-size:17px}
+  .station-card .star-button{font-size:25px;width:38px;height:38px}
+  .section-actions .muted{font-size:16px}
+  .video-meta h2{font-size:23px}.stream-note{font-size:15px}
+  .channel-title b{font-size:18px}.channel-title small{font-size:15px}.channel-row{min-height:58px}
+  .news-intro h2{font-size:27px}.news-intro p{font-size:18px}
+  .news-card .eyebrow{font-size:15px}.news-card h3{font-size:22px}.news-card p{font-size:17px}.news-open{font-size:15px}
+  .playing-copy b{font-size:17px}.playing-copy small{font-size:14px}
+  .control-button{font-size:20px;width:38px;height:38px}
+  .volume-control{font-size:14px}.volume-control b{font-size:15px}
+  .site-footnote{font-size:13px;line-height:1.5}
+}
+@media(max-width:430px){
+  .brand{font-size:15px}.brand small{font-size:12px}
+  .welcome-row h1{font-size:34px}.welcome-row p{font-size:17px}
+  .station-card h3{font-size:19px}.station-card p{font-size:15px}
+  .news-card h3{font-size:20px}.news-card p{font-size:16px}
+  .player-bar{gap:6px}.playing-info{max-width:calc(100% - 112px)}
+  .playing-copy b{font-size:15px}.playing-copy small{font-size:12px}
+}
