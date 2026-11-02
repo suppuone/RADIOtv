@@ -85,6 +85,12 @@
   let viewSwapToken = 0;
   let commandMatches = [];
   let commandSelected = 0;
+  let commandTVSearchTimer = null;
+  let commandTVSearchController = null;
+  let commandTVSearchToken = 0;
+  let adminGitHubToken = '';
+  let adminSharedFavorites = {};
+  let adminFavoritesSha = '';
   const favoriteHistory = [];
   let favoriteHistoryMode = '';
 
@@ -104,6 +110,9 @@
   };
   const radioFavorites = readStore('coolmag.radio.favorites.v1');
   const tvFavorites = readStore('coolmag.tv.favorites.v1');
+  const savedSort=readStore('coolmag.list.sort.v1');
+  let radioSortMode=['name','genre'].includes(savedSort.radio)?savedSort.radio:'name';
+  let tvSortMode=['name','genre'].includes(savedSort.tv)?savedSort.tv:'name';
   const readRecent = key => { try { const value=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(value)?value.filter(item=>item&&typeof item==='object'):[]; } catch { return []; } };
   const recentHistory = {radio:readRecent('coolmag.recent.radio.v1'),tv:readRecent('coolmag.recent.tv.v1')};
   showingTVFavorites = Object.keys(tvFavorites).length > 0;
@@ -209,9 +218,22 @@
     else media.pause();
     syncTransport();
   }
+  function sortStationRows(rows,mode,kind){
+    const category=station=>{
+      const value=kind==='tv'?station.group:(Array.isArray(station.tags)?station.tags.join(','):station.tags);
+      return String(value||'Other').split(/[;,]/)[0].trim()||'Other';
+    };
+    return [...rows].sort((a,b)=>{
+      if(mode==='genre'){
+        const groupOrder=category(a).localeCompare(category(b),undefined,{sensitivity:'base'});
+        if(groupOrder)return groupOrder;
+      }
+      return String(a.name||'').localeCompare(String(b.name||''),undefined,{sensitivity:'base',numeric:true});
+    });
+  }
   function stepFavorite(direction) {
     const tvMode=$('tv-view').classList.contains('active')||Boolean(currentTV);
-    const list=Object.values(tvMode?tvFavorites:radioFavorites);
+    const list=sortStationRows(Object.values(tvMode?tvFavorites:radioFavorites),tvMode?tvSortMode:radioSortMode,tvMode?'tv':'radio');
     if(!list.length){toast('Add favorites to use previous and next.');syncTransport();return;}
     const current=tvMode?currentTV:currentRadio;
     const historyMode=tvMode?'tv':'radio';if(favoriteHistoryMode!==historyMode){favoriteHistory.length=0;favoriteHistoryMode=historyMode;}
@@ -372,11 +394,67 @@
     if(term&&!matches.some(item=>item.type==='radio'))matches.push({title:`Search and play “${query.trim()}” on Radio`,detail:'Search Radio Browser for a matching station','type':'radio-search',action:()=>{setView('radio');$('radio-search').value=query.trim();searchRadio().then(()=>{if(radioStations.length)playRadio(radioStations[0]);});}});
     return matches.slice(0,14);
   }
-  function renderCommandResults(){
-    const target=$('command-results');commandMatches=commandItems($('command-input').value);commandSelected=0;
+  async function searchTVCatalog(query,signal){
+    const country=$('tv-country-select').value;
+    const file=country!=='all'?`countries/${country.toLowerCase()}.m3u`:'index.m3u';
+    const response=await fetch(IPTV_BASE+file,{cache:'no-cache',signal});
+    if(!response.ok)throw new Error(`TV catalog unavailable (${response.status})`);
+    const needle=query.trim().toLocaleLowerCase();
+    const matches=[];const seen=new Set();let meta='',buffer='';
+    const consume=line=>{
+      line=line.trim();
+      if(line.startsWith('#EXTINF')){meta=line;return;}
+      if(!line||line.startsWith('#')||!meta)return;
+      const row=playlistRow(meta,line);meta='';
+      if(`${row.name} ${row.group} ${row.country}`.toLocaleLowerCase().includes(needle)&&!seen.has(row.url)){
+        seen.add(row.url);matches.push(row);
+      }
+    };
+    if(!response.body?.getReader){
+      for(const line of (await response.text()).split(/\r?\n/)){consume(line);if(matches.length>=20)break;}
+      return matches;
+    }
+    const reader=response.body.getReader(),decoder=new TextDecoder();
+    while(matches.length<20){
+      const {value,done}=await reader.read();
+      buffer+=decoder.decode(value||new Uint8Array(),{stream:!done});
+      const lines=buffer.split(/\r?\n/);buffer=lines.pop()||'';
+      for(const line of lines){consume(line);if(matches.length>=20)break;}
+      if(done||matches.length>=20)break;
+    }
+    if(matches.length>=20)reader.cancel().catch(()=>{});
+    return matches;
+  }
+  function renderCommandRows(){
+    const target=$('command-results');
     if(!commandMatches.length){target.innerHTML='<div class="command-empty">No matching stations or actions.</div>';return;}
     target.innerHTML=commandMatches.map((item,index)=>`<button class="command-result ${index===commandSelected?'selected':''}" role="option" aria-selected="${index===commandSelected}" data-command-index="${index}"><span class="command-result-icon">${item.type==='tv'?'▣':item.type==='radio'?'♫':'⌕'}</span><span><b>${safe(item.title)}</b><small>${safe(item.detail)}</small></span><kbd>${item.type==='radio'||item.type==='tv'?'↵':''}</kbd></button>`).join('');
     target.querySelectorAll('[data-command-index]').forEach(button=>button.addEventListener('click',()=>runCommand(Number(button.dataset.commandIndex))));
+  }
+  function renderCommandResults(){
+    const query=$('command-input').value.trim();
+    clearTimeout(commandTVSearchTimer);commandTVSearchController?.abort();
+    const token=++commandTVSearchToken;
+    commandMatches=commandItems(query);commandSelected=0;renderCommandRows();
+    if(query.length<3)return;
+    const target=$('command-results');
+    target.insertAdjacentHTML('beforeend',`<div class="command-empty" data-tv-search-status>Searching TV channels for “${safe(query)}”…</div>`);
+    commandTVSearchTimer=setTimeout(async()=>{
+      const controller=new AbortController();commandTVSearchController=controller;
+      try{
+        const matches=await searchTVCatalog(query,controller.signal);
+        if(token!==commandTVSearchToken)return;
+        const tvItems=matches.map(station=>({title:station.name||'TV channel',detail:`${station.country||'TV'} · ${station.group||'Live TV'} · IPTV-org`,type:'tv',id:`tv:${station.url}`,action:()=>{setView('tv');showingTVFavorites=false;if(!tvStations.some(row=>row.url===station.url))tvStations.unshift(station);renderTV();playTV(station);}}));
+        const existing=commandItems(query),seen=new Set();
+        commandMatches=[...tvItems,...existing].filter(item=>{const key=item.id||`${item.type}:${item.title}`;if(seen.has(key))return false;seen.add(key);return true;}).slice(0,14);
+        commandSelected=0;renderCommandRows();
+        if(!matches.length)$('command-results').insertAdjacentHTML('beforeend','<div class="command-empty">No TV channel matched. Try another name or country.</div>');
+      }catch(error){
+        if(error.name==='AbortError'||token!==commandTVSearchToken)return;
+        const status=$('command-results').querySelector('[data-tv-search-status]');
+        if(status)status.textContent='TV catalog search unavailable. Check your connection.';
+      }
+    },350);
   }
   function runCommand(index){const item=commandMatches[index];if(!item)return;closeCommandPalette();item.action();}
   $('command-open-top').addEventListener('click',openCommandPalette);
@@ -408,6 +486,7 @@
   $('dock-mute').addEventListener('click',toggleMute);
   document.addEventListener('keydown',event=>{
     if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){event.preventDefault();openCommandPalette();return;}
+    if(event.key==='Escape'&&!$('admin-overlay').hidden){closeAdminFavorites();return;}
     if(event.key==='Escape'&&!$('settings-overlay').hidden){closeSettings();return;}
     if(event.key==='Escape'&&!$('command-overlay').hidden){closeCommandPalette();return;}
     const target=event.target;const typing=target instanceof HTMLElement&&(target.isContentEditable||['INPUT','TEXTAREA','SELECT'].includes(target.tagName));
@@ -444,6 +523,15 @@
   $('settings-button').addEventListener('click',openSettings);
   $('settings-close').addEventListener('click',closeSettings);
   $('settings-overlay').addEventListener('click',event=>{if(event.target===$('settings-overlay'))closeSettings();});
+  $('admin-open').addEventListener('click',openAdminFavorites);
+  $('admin-close').addEventListener('click',closeAdminFavorites);
+  $('admin-overlay').addEventListener('click',event=>{if(event.target===$('admin-overlay'))closeAdminFavorites();});
+  $('admin-connect').addEventListener('click',connectAdminFavorites);
+  $('admin-token').addEventListener('keydown',event=>{if(event.key==='Enter')connectAdminFavorites();});
+  $('admin-import-local').addEventListener('click',importBrowserTVFavorites);
+  $('admin-add-channel').addEventListener('click',addAdminFavorite);
+  $('admin-save').addEventListener('click',publishAdminFavorites);
+  $('admin-disconnect').addEventListener('click',()=>{adminGitHubToken='';adminFavoritesSha='';adminSharedFavorites={};$('admin-token').value='';$('admin-workspace').hidden=true;$('admin-status').textContent='Disconnected. Your token has been cleared.';});
   $('settings-weather').addEventListener('click',()=>setUserSetting('weather',!uiSettings.weather));
   $('settings-time').addEventListener('click',()=>setUserSetting('time',!uiSettings.time));
   $('settings-volume').addEventListener('click',()=>setUserSetting('volume',!uiSettings.volume));
@@ -589,9 +677,86 @@
       syncHomeWeather();
     }
   }
+
+  const ADMIN_FAVORITES_API='https://api.github.com/repos/suppuone/RADIOtv/contents/surak_home_tv_favorites.json';
+  function adminHeaders(){return {Authorization:`Bearer ${adminGitHubToken}`,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};}
+  function decodeGitHubFile(content){const binary=atob(content.replace(/\s/g,''));return new TextDecoder().decode(Uint8Array.from(binary,char=>char.charCodeAt(0)));}
+  function encodeGitHubFile(value){const bytes=new TextEncoder().encode(JSON.stringify(value,null,2));let binary='';for(const byte of bytes)binary+=String.fromCharCode(byte);return btoa(binary);}
+  function renderAdminFavorites(){
+    const target=$('admin-favorite-list'),entries=Object.entries(adminSharedFavorites);
+    $('admin-count').textContent=String(entries.length);
+    if(!entries.length){target.innerHTML='<div class="command-empty">No shared TV favorites yet.</div>';return;}
+    target.innerHTML=entries.map(([url,item])=>`<article class="admin-favorite-row" data-admin-row="${safe(url)}"><label class="admin-field"><span>Channel name</span><input data-admin-name value="${safe(item.name||'TV channel')}"></label><label class="admin-field"><span>Category</span><input data-admin-group value="${safe(item.group||'Live TV')}"></label><button class="admin-remove" data-admin-remove="${safe(url)}" type="button">Remove</button><div class="admin-favorite-url" title="${safe(url)}">${safe(url)}</div></article>`).join('');
+    target.querySelectorAll('[data-admin-remove]').forEach(button=>button.addEventListener('click',()=>{delete adminSharedFavorites[button.dataset.adminRemove];renderAdminFavorites();}));
+  }
+  async function connectAdminFavorites(){
+    const button=$('admin-connect'),status=$('admin-status');
+    adminGitHubToken=$('admin-token').value.trim();
+    if(!adminGitHubToken){status.textContent='Paste your GitHub token to connect.';return;}
+    button.disabled=true;button.textContent='Connecting…';status.textContent='Loading shared favorites from GitHub…';
+    try{
+      const response=await fetch(`${ADMIN_FAVORITES_API}?ref=main`,{headers:adminHeaders(),cache:'no-store'});
+      if(!response.ok)throw new Error(response.status===401||response.status===403?'GitHub rejected the token. Check that it has Contents read/write access to RADIOtv.':`GitHub request failed (${response.status}).`);
+      const file=await response.json();
+      adminSharedFavorites=JSON.parse(decodeGitHubFile(file.content));
+      if(!adminSharedFavorites||Array.isArray(adminSharedFavorites)||typeof adminSharedFavorites!=='object')throw new Error('The shared favorites file is not a valid channel list.');
+      adminFavoritesSha=file.sha;$('admin-workspace').hidden=false;renderAdminFavorites();
+      status.textContent=`Connected · ${Object.keys(adminSharedFavorites).length} shared channels loaded.`;
+    }catch(error){adminGitHubToken='';$('admin-token').value='';status.textContent=error.message||'Could not connect to GitHub.';}
+    finally{button.disabled=false;button.textContent='Connect';}
+  }
+  function importBrowserTVFavorites(){
+    let browserTVFavorites={};
+    try{
+      const parsed=JSON.parse(localStorage.getItem('coolmag.tv.favorites.v1')||'{}');
+      if(parsed&&typeof parsed==='object'&&!Array.isArray(parsed))browserTVFavorites=parsed;
+    }catch{}
+    Object.assign(tvFavorites,browserTVFavorites);
+    const saved=Object.values(browserTVFavorites).filter(station=>station&&station.url);
+    if(!saved.length){$('admin-status').textContent=`No TV favorites were found for ${location.origin}. Favorites saved on localhost and the hosted site are separate.`;return;}
+    let added=0;
+    saved.forEach(station=>{
+      const exists=Boolean(adminSharedFavorites[station.url]);
+      adminSharedFavorites[station.url]={...(adminSharedFavorites[station.url]||{}),...station,url:station.url};
+      if(!exists)added++;
+    });
+    renderAdminFavorites();
+    $('admin-status').textContent=`Imported ${saved.length} browser favorite${saved.length===1?'':'s'} (${added} new). Click “Publish shared list” to send them to GitHub.`;
+  }
+  function addAdminFavorite(){
+    const name=$('admin-channel-name').value.trim(),url=$('admin-channel-url').value.trim();
+    if(!name||!url){$('admin-status').textContent='Enter both a channel name and stream URL.';return;}
+    if(!/^https?:\/\//i.test(url)){$('admin-status').textContent='The stream URL must begin with http:// or https://.';return;}
+    adminSharedFavorites[url]={name,group:$('admin-channel-group').value.trim()||'Live TV',logo:$('admin-channel-logo').value.trim(),url,options:[]};
+    $('admin-channel-name').value='';$('admin-channel-url').value='';$('admin-channel-group').value='';$('admin-channel-logo').value='';
+    renderAdminFavorites();$('admin-status').textContent='Channel added. Publish the shared list to make it visible to everyone.';
+  }
+  async function publishAdminFavorites(){
+    const status=$('admin-status'),button=$('admin-save');
+    if(!adminGitHubToken||!adminFavoritesSha){status.textContent='Connect to GitHub first.';return;}
+    document.querySelectorAll('#admin-favorite-list [data-admin-row]').forEach(row=>{
+      const url=row.dataset.adminRow,item=adminSharedFavorites[url];if(!item)return;
+      item.name=row.querySelector('[data-admin-name]').value.trim()||'TV channel';
+      item.group=row.querySelector('[data-admin-group]').value.trim()||'Live TV';
+    });
+    button.disabled=true;button.textContent='Publishing…';status.textContent='Publishing shared favorites to GitHub…';
+    try{
+      const response=await fetch(ADMIN_FAVORITES_API,{method:'PUT',headers:{...adminHeaders(),'Content-Type':'application/json'},body:JSON.stringify({message:'Update shared TV favorites from CoolMagRaTv admin',content:encodeGitHubFile(adminSharedFavorites),sha:adminFavoritesSha,branch:'main'})});
+      const result=await response.json();
+      if(!response.ok)throw new Error(response.status===409||response.status===422?'The GitHub file changed since you connected. Disconnect and reconnect to load the latest list, then try again.':result.message||`Publish failed (${response.status}).`);
+      adminFavoritesSha=result.content.sha;
+      Object.assign(tvFavorites,adminSharedFavorites);persist('coolmag.tv.favorites.v1',tvFavorites);updateFavoriteCounts();renderFavorites();renderTV();
+      status.textContent=`Published ${Object.keys(adminSharedFavorites).length} shared channels. Users will get the list when they refresh.`;
+    }catch(error){status.textContent=error.message||'Could not publish the shared list.';}
+    finally{button.disabled=false;button.textContent='Publish shared list';}
+  }
+  function openAdminFavorites(){closeSettings();$('admin-overlay').hidden=false;document.body.classList.add('admin-open');$('admin-token').focus();}
+  function closeAdminFavorites(){
+    $('admin-overlay').hidden=true;document.body.classList.remove('admin-open');
+  }
   function renderRadio() {
     const target = $('radio-stations');
-    const rows = (showingRadioFavorites ? Object.values(radioFavorites) : radioStations).slice(0,100);
+    const rows = sortStationRows(showingRadioFavorites ? Object.values(radioFavorites) : radioStations,radioSortMode,'radio').slice(0,100);
     $('station-list-title').textContent = showingRadioFavorites ? 'Your radio favorites' : `${$('country-select').selectedOptions[0]?.text || 'Worldwide'} stations`;
     if (!rows.length) { target.innerHTML = radioLoading?`<div class="station-grid skeleton-grid">${skeletonCards(6)}</div>`:'<div class="empty-state">No stations found. Try another search or country.</div>';renderHomeRadio();renderFavorites();return; }
     target.innerHTML = rows.map((station,index) => {
@@ -643,7 +808,7 @@
   }
   function renderFavorites() {
     const radioTarget=$('favorite-radio-grid'),tvTarget=$('favorite-tv-grid');if(!radioTarget||!tvTarget)return;
-    const radios=Object.values(radioFavorites),tvs=Object.values(tvFavorites);
+    const radios=sortStationRows(Object.values(radioFavorites),radioSortMode,'radio'),tvs=sortStationRows(Object.values(tvFavorites),tvSortMode,'tv');
     radioTarget.innerHTML=radios.length?radios.map(station=>`<article class="favorite-row" data-fav-radio="${safe(radioKey(station))}"><span>♫</span><div><b>${safe(station.name||'Radio station')}</b><small>${safe(station.country||'Internet radio')}</small></div><button class="tile-star is-favorite" data-fav-radio-remove="${safe(radioKey(station))}" aria-label="Remove favorite">★</button></article>`).join(''):'<div class="empty-state">No radio favorites saved yet.</div>';
     tvTarget.innerHTML=tvs.length?tvs.map(station=>`<article class="favorite-row" data-fav-tv="${safe(station.url)}"><span>▣</span><div><b>${safe(station.name||'TV channel')}</b><small>${safe(station.group||'Live television')}</small></div><button class="tile-star is-favorite" data-fav-tv-remove="${safe(station.url)}" aria-label="Remove favorite">★</button></article>`).join(''):'<div class="empty-state">No TV favorites saved yet.</div>';
     radioTarget.querySelectorAll('[data-fav-radio]').forEach(card=>card.addEventListener('click',event=>{if(event.target.closest('[data-fav-radio-remove]'))return;const station=radios.find(item=>radioKey(item)===card.dataset.favRadio);if(station){setView('radio');playRadio(station);}}));
@@ -722,6 +887,8 @@
   }
   $('radio-search-button').addEventListener('click',searchRadio);
   $('radio-search').addEventListener('keydown',event=>{if(event.key==='Enter')searchRadio();});
+  $('radio-sort-select').value=radioSortMode;
+  $('radio-sort-select').addEventListener('change',()=>{radioSortMode=$('radio-sort-select').value;persist('coolmag.list.sort.v1',{radio:radioSortMode,tv:tvSortMode});renderRadio();renderFavorites();});
   $('country-select').addEventListener('change',()=>{const name=$('country-select').selectedOptions[0]?.text||'India';loadWeather(name,$('country-select').value==='all'?'':$('country-select').value);searchRadio();});
   $('load-more-radio').addEventListener('click',searchRadio);
   $('radio-favorites-button').addEventListener('click',()=>{radioFilterTouched=true;showingRadioFavorites=!showingRadioFavorites;renderRadio();if(showingRadioFavorites)$('radio-status').textContent=`${Object.keys(radioFavorites).length} favorites`;else searchRadio();});
@@ -826,7 +993,7 @@
     return showingTVFavorites?rows:rows.slice(0,120);
   }
   function renderTV() {
-    const rows=filteredTV();const list=$('tv-channels');
+    const rows=sortStationRows(filteredTV(),tvSortMode,'tv');const list=$('tv-channels');
     const favoritesFirst=showingTVFavorites;
     $('tv-channel-count').textContent=rows.length.toLocaleString();
     $('tv-view').classList.toggle('favorites-first',favoritesFirst&&!currentTV);
@@ -885,6 +1052,8 @@
   function stopTV(){if(hls){hls.destroy();hls=null;}if(tvVideo){tvVideo.pause();tvVideo.removeAttribute('src');tvVideo.load();}currentTV=null;updateFullscreenTVHeader();if($('tv-now-playing'))$('tv-now-playing').textContent='No channel selected';if($('video-stage'))$('video-stage').querySelector('.video-placeholder').classList.remove('hidden');if($('tv-current-favorite'))updateTVStar();syncTransport();}
   $('load-tv').addEventListener('click',loadTV);
   $('tv-country-select').addEventListener('change',loadTV);
+  $('tv-sort-select').value=tvSortMode;
+  $('tv-sort-select').addEventListener('change',()=>{tvSortMode=$('tv-sort-select').value;persist('coolmag.list.sort.v1',{radio:radioSortMode,tv:tvSortMode});renderTV();renderFavorites();});
   $('tv-fullscreen').addEventListener('click',toggleTVFullView);
   $('tv-full-home').addEventListener('click',()=>{
     if(currentTV)stopTV();
