@@ -245,7 +245,7 @@
     if(tvMode)playTV(next);else playRadio(next);
   }
   function getHomeHeroStation() {
-    return Object.values(tvFavorites).find(station=>station&&station.url)||HOME_BBC;
+    return sortStationRows(Object.values(tvFavorites).filter(station=>station&&station.url),tvSortMode,'tv')[0]||HOME_BBC;
   }
   function updateHomeHeroStation(station) {
     const isFavorite=Boolean(tvFavorites[station.url]);
@@ -262,7 +262,7 @@
   function scheduleHomePreviewRotation() {
     clearInterval(homePreviewCycleTimer);
     homePreviewCycleTimer=setInterval(()=>{
-      const favorites=Object.values(tvFavorites).filter(station=>station&&station.url);
+      const favorites=sortStationRows(Object.values(tvFavorites).filter(station=>station&&station.url),tvSortMode,'tv');
       if(favorites.length<2)return;
       const currentIndex=favorites.findIndex(station=>station.url===homePreviewStation?.url);
       startHomePreview(favorites[(currentIndex+1+favorites.length)%favorites.length]);
@@ -916,7 +916,7 @@
     const name=$('fullscreen-tv-name'),nextLabel=$('fullscreen-next-favorite');
     if(!name||!nextLabel)return;
     name.textContent=currentTV?.name||'Live TV';
-    const favorites=Object.values(tvFavorites);
+    const favorites=sortStationRows(Object.values(tvFavorites).filter(item=>item&&item.url),tvSortMode,'tv');
     if(!favorites.length){nextLabel.textContent='No saved TV favorites';return;}
     const currentIndex=favorites.findIndex(item=>item.url===currentTV?.url);
     const next=currentIndex<0?favorites[0]:favorites.length>1?favorites[(currentIndex+1)%favorites.length]:null;
