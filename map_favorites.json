@@ -1218,7 +1218,7 @@
     "codec": "",
     "bitrate": 0,
     "clickcount": 0,
-    "favicon": ""
+    "favicon": "https://cdn.smartads.in/images/product/radio/AIR-FM-Gold-Radio.png"
   },
   "e928bf7b-7de2-4447-87ec-369d1be1b9f5": {
     "changeuuid": "18f6e510-58f2-4e63-b86f-5475de16f8ab",
@@ -1267,7 +1267,7 @@
     "url": "http://stream.zeno.fm/8ty8szwpwfeuv",
     "url_resolved": "http://stream.zeno.fm/8ty8szwpwfeuv",
     "homepage": "http://www.hitsofbollywood.com/",
-    "favicon": "",
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzydudJYnU6d45QWJ_Tfv3rTLdQCWW6xHdJuGHbB963Q&s",
     "tags": "bollywood,desi,hindi,india",
     "country": "India",
     "countrycode": "IN",
@@ -1344,7 +1344,7 @@
     "codec": "HLS",
     "bitrate": 0,
     "clickcount": 0,
-    "favicon": ""
+    "favicon": "https://cdn.smartads.in/images/product/radio/AIR-FM-Gold-Radio.png"
   },
   "akashvani:297": {
     "stationuuid": "akashvani:297",
@@ -1356,7 +1356,7 @@
     "codec": "HLS",
     "bitrate": 0,
     "clickcount": 0,
-    "favicon": ""
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSz-nCj75vqS1bMuRRwpjp4MqgmJ9WaFVLSMP276ehrng&s"
   },
   "akashvani:242": {
     "stationuuid": "akashvani:242",
@@ -1392,7 +1392,7 @@
     "codec": "HLS",
     "bitrate": 0,
     "clickcount": 0,
-    "favicon": ""
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSz-nCj75vqS1bMuRRwpjp4MqgmJ9WaFVLSMP276ehrng&s"
   },
   "akashvani:246": {
     "stationuuid": "akashvani:246",
@@ -1500,7 +1500,7 @@
     "codec": "HLS",
     "bitrate": 0,
     "clickcount": 0,
-    "favicon": ""
+    "favicon": "https://cdn.smartads.in/images/product/radio/AIR-FM-Gold-Radio.png"
   },
   "akashvani:3": {
     "stationuuid": "akashvani:3",
@@ -1548,7 +1548,7 @@
     "codec": "HLS",
     "bitrate": 0,
     "clickcount": 0,
-    "favicon": ""
+    "favicon": "https://cdn.smartads.in/images/product/radio/AIR-FM-Gold-Radio.png"
   },
   "mediacorp:OLI968FMAAC": {
     "stationuuid": "mediacorp:OLI968FMAAC",
@@ -1572,7 +1572,7 @@
     "codec": "AAC",
     "bitrate": 0,
     "clickcount": 0,
-    "favicon": ""
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTI1O-u8M0AQFz_fl_Q0dDVs2mI_u5o01MOwpWcE_sreA&s=10"
   },
   "mediacorp:SYMPHONY924AAC": {
     "stationuuid": "mediacorp:SYMPHONY924AAC",
@@ -1596,7 +1596,7 @@
     "codec": "AAC",
     "bitrate": 0,
     "clickcount": 0,
-    "favicon": ""
+    "favicon": "https://www16.mediacorp.sg/melisten/radiostation-logos/cna-938.png"
   },
   "mediacorp:987FMAAC": {
     "stationuuid": "mediacorp:987FMAAC",
@@ -1608,7 +1608,7 @@
     "codec": "AAC",
     "bitrate": 0,
     "clickcount": 0,
-    "favicon": ""
+    "favicon": "https://www16.mediacorp.sg/melisten/radiostation-logos/987.png"
   },
   "mediacorp:GOLD905AAC": {
     "stationuuid": "mediacorp:GOLD905AAC",
@@ -1620,7 +1620,7 @@
     "codec": "AAC",
     "bitrate": 0,
     "clickcount": 0,
-    "favicon": ""
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvVgLGjKI9JK88JXtWtdm9gX3RGrXWm-57k02LGyrceQ&s=10"
   },
   "mediacorp:CLASS95AAC": {
     "stationuuid": "mediacorp:CLASS95AAC",
@@ -1632,7 +1632,7 @@
     "codec": "AAC",
     "bitrate": 0,
     "clickcount": 0,
-    "favicon": ""
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2ZjtPWzzbJf4uRoPj1tMQ5BZVSAqK_QBHOeOQhG8K1g&s"
   },
   "bbc:bbc_world_service": {
     "stationuuid": "bbc:bbc_world_service",
