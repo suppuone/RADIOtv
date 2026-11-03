@@ -319,7 +319,7 @@
     "url": "https://vpmurugun.radioca.st/stream",
     "url_resolved": "https://vpmurugun.radioca.st/stream",
     "homepage": "https://www.radioparamankurichi.in/",
-    "favicon": "",
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTWeCq3BX8Jd80DV_k33J2VHTKdv8kahg6LtoloiRtyEg&s=10",
     "tags": "",
     "country": "India",
     "countrycode": "IN",
@@ -631,7 +631,7 @@
     "url": "https://www.hamropatro.com/api/radio/stream/34",
     "url_resolved": "https://www.hamropatro.com/api/radio/stream/34",
     "homepage": "",
-    "favicon": "",
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkuKoajaVbhD2M4yCpSG0pjr1pcnWoiSPvUVFa79WpeA&s=10",
     "tags": "",
     "country": "Nepal",
     "countrycode": "NP",
@@ -748,7 +748,7 @@
     "url": "https://radiohits882.radioca.st/;",
     "url_resolved": "https://radiohits882.radioca.st/;",
     "homepage": "http://radiohits882.com/",
-    "favicon": "",
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRqB3xKgzwo-9vWBRZVamifzJoyf1QJTD3_V0SX4amHxg&s",
     "tags": "arabic music",
     "country": "Egypt",
     "countrycode": "EG",
@@ -1099,7 +1099,7 @@
     "url": "https://r.bgp.rodeo/listen/outlaw/radio.mp3",
     "url_resolved": "https://r.bgp.rodeo/listen/outlaw/radio.mp3",
     "homepage": "https://r.bgp.rodeo/public/outlaw",
-    "favicon": "",
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS-MIQUiudWRM89yfnzmEdHlN5KkJGjTQg-1CcJKI30hQ&s=10",
     "tags": "alt-country,americana,country,country rock,honky tonk,outlaw country,red dirt,southern rock,texas country",
     "country": "The United States Of America",
     "countrycode": "US",
@@ -1464,7 +1464,7 @@
     "codec": "HLS",
     "bitrate": 0,
     "clickcount": 0,
-    "favicon": ""
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3IeHVZcNjqbLlmb1pUrB35AIfJi5x1erQ1ul2XwmqjA&s=10"
   },
   "akashvani:1": {
     "stationuuid": "akashvani:1",
@@ -1488,7 +1488,7 @@
     "codec": "HLS",
     "bitrate": 0,
     "clickcount": 0,
-    "favicon": ""
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8KlS0Y-qKqYVGfhQVeKK6EoPzBqUT9bhDxWge6nUFPw&s=10"
   },
   "akashvani:2": {
     "stationuuid": "akashvani:2",
@@ -1560,7 +1560,7 @@
     "codec": "AAC",
     "bitrate": 0,
     "clickcount": 0,
-    "favicon": ""
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQr6DpHZQiaZ-pe_JmSc2pyswKjX64zjNs_xn8UJnTDiw&s=10"
   },
   "mediacorp:INDIEGO_S01AAC_48": {
     "stationuuid": "mediacorp:INDIEGO_S01AAC_48",
@@ -1584,7 +1584,7 @@
     "codec": "AAC",
     "bitrate": 0,
     "clickcount": 0,
-    "favicon": ""
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbE82ONDPQ8kQXf03BNZhp_xaxZjCM5_xqDiM7hHgjNg&s=10"
   },
   "mediacorp:938NOWAAC": {
     "stationuuid": "mediacorp:938NOWAAC",
