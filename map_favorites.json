@@ -1638,11 +1638,11 @@
     "bitrate": 0,
     "clickcount": 0
   },
-  "https://stream.zeno.fm/74mzdgk024zuv.m3u": {
-    "stationuuid": "https://stream.zeno.fm/74mzdgk024zuv.m3u",
+  "https://stream.zeno.fm/74mzdgk024zuv": {
+    "stationuuid": "https://stream.zeno.fm/74mzdgk024zuv",
     "name": "HAMARE NAGPURI",
-    "url": "https://stream.zeno.fm/74mzdgk024zuv.m3u",
-    "url_resolved": "https://stream.zeno.fm/74mzdgk024zuv.m3u",
+    "url": "https://stream.zeno.fm/74mzdgk024zuv",
+    "url_resolved": "https://stream.zeno.fm/74mzdgk024zuv",
     "country": "INDIA",
     "favicon": "",
     "tags": "",
