@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '4.0.8';
+  const APP_VERSION = '4.0.9';
 
   const RADIO_API = [
     'https://de1.api.radio-browser.info/json',
@@ -77,10 +77,26 @@
       return image.href;
     }catch{return '';}
   }
+  function radioImageCandidates(station){
+    return [...new Set([station.favicon,station.logo,station.image,station.artwork].map(value=>{
+      if(!value)return '';
+      const text=String(value).trim();
+      if(/^http:\/\//i.test(text))return normalizeImageURL(text.replace(/^http:/i,'https:'));
+      return normalizeImageURL(text);
+    }).filter(Boolean))];
+  }
   function radioArtwork(station){
-    const url=normalizeImageURL(station.favicon||station.logo||station.image||station.artwork);
+    const candidates=radioImageCandidates(station);
     const initials=safe((station.name||'FM').trim().slice(0,2).toUpperCase());
-    return url?`<img src="${safe(url)}" loading="lazy" alt="" onerror="this.onerror=null;this.replaceWith(document.createTextNode('♫'))">`:`<span>${initials}</span>`;
+    return candidates.length?`<img data-radio-art data-radio-fallbacks="${safe(JSON.stringify(candidates.slice(1)))}" data-radio-initials="${initials}" src="${safe(candidates[0])}" loading="lazy" decoding="async" alt="${safe(station.name||'Radio station')} logo">`:`<span class="radio-art-fallback">${initials}</span>`;
+  }
+  function bindRadioArtwork(container){
+    container.querySelectorAll('img[data-radio-art]').forEach(image=>image.addEventListener('error',()=>{
+      let fallbacks=[];try{fallbacks=JSON.parse(image.dataset.radioFallbacks||'[]');}catch{}
+      const next=fallbacks.shift();
+      if(next){image.dataset.radioFallbacks=JSON.stringify(fallbacks);image.src=next;return;}
+      const fallback=document.createElement('span');fallback.className='radio-art-fallback';fallback.textContent=image.dataset.radioInitials||'♫';image.replaceWith(fallback);
+    }));
   }
   const PLAYER_ICONS={
     shuffle:'<svg class="player-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 7h2.5a5 5 0 0 1 3.7 1.7l5.6 6.6a5 5 0 0 0 3.7 1.7H21m-4-4 4 4-4 4M3 17h2.5a5 5 0 0 0 3.7-1.7l1.1-1.3M17 3l4 4-4 4m4-4h-2.5a5 5 0 0 0-3.7 1.7l-1.1 1.3"/></svg>',
@@ -880,6 +896,7 @@
       const art=radioArtwork(station);
       return `<article class="home-channel radio-library-channel ${playing?'active':''}" data-radio-key="${key}" tabindex="0" role="button" aria-label="Play ${safe(station.name)}"><div class="channel-art">${art}<i class="media-badge media-badge-radio" aria-label="Radio station" title="Radio"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="m6 5 12-3M7 12h.01M7 16h.01m4-4h6m-6 4h6"/></svg></i></div><button class="tile-star ${favorite?'is-favorite':''}" data-radio-star="${key}" title="${favorite?'Remove':'Add'} favorite" aria-label="${favorite?'Remove':'Add'} favorite">${favorite?'★':'☆'}</button><b>${safe(station.name || 'Unnamed station')}</b><small>${safe(meta)}</small></article>`;
     }).join('');
+    bindRadioArtwork(target);
     target.querySelectorAll('.radio-library-channel').forEach(card => {
       const station = rows.find(row => radioKey(row) === card.dataset.radioKey);
       card.addEventListener('click', event => { if (event.target.closest('[data-radio-star]')) return; playRadio(station); });
@@ -900,11 +917,11 @@
     if(!rows.length){target.innerHTML=radioLoading?`<div class="skeleton-grid">${skeletonCards(4)}</div>`:'<div class="empty-state">Radio stations are unavailable right now.</div>';return;}
     target.innerHTML=rows.map((station,index)=>{
       const key=safe(radioKey(station));const favorite=Boolean(radioFavorites[radioKey(station)]);
-      const initials=safe((station.name||'FM').trim().slice(0,2).toUpperCase());
       const logo=radioArtwork(station);
       const active=currentRadio&&radioKey(currentRadio)===radioKey(station);
       return `<article class="home-channel home-radio-channel ${active?'active':''}" data-home-radio="${key}" tabindex="0" role="button" aria-label="Play ${safe(station.name||'Radio station')}"><div class="channel-art">${logo}<i class="media-badge media-badge-radio" aria-label="Radio station" title="Radio"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="m6 5 12-3M7 12h.01M7 16h.01m4-4h6m-6 4h6"/></svg></i></div><button class="tile-star ${favorite?'is-favorite':''}" data-home-radio-star="${key}" aria-label="Toggle favorite">${favorite?'★':'☆'}</button><b>${safe(station.name||'Radio station')}</b><small>${safe(station.country||'Internet radio')}${station.bitrate?` · ${safe(station.bitrate)} KBPS`:''}</small></article>`;
     }).join('');
+    bindRadioArtwork(target);
     target.querySelectorAll('[data-home-radio]').forEach(tile=>{const station=rows.find(item=>radioKey(item)===tile.dataset.homeRadio);tile.addEventListener('click',event=>{if(event.target.closest('[data-home-radio-star]'))return;playRadio(station);});tile.addEventListener('keydown',event=>{if(event.key==='Enter')playRadio(station);});});
     target.querySelectorAll('[data-home-radio-star]').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();const station=rows.find(item=>radioKey(item)===button.dataset.homeRadioStar);if(station)toggleRadioFavorite(station);}));
   }
