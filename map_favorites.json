@@ -670,7 +670,7 @@
     "url": "https://www.hamropatro.com/api/radio/stream/82",
     "url_resolved": "https://www.hamropatro.com/api/radio/stream/82",
     "homepage": "",
-    "favicon": "",
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9Wq_HzpPPv6kWtVqdRHUgpjqPoha6i8tC_j6rG9ebWg&s=10",
     "tags": "",
     "country": "Nepal",
     "countrycode": "NP",
@@ -787,7 +787,7 @@
     "url": "https://n06.rcs.revma.com/1ut6qwtbv4uvv",
     "url_resolved": "https://n06.rcs.revma.com/1ut6qwtbv4uvv",
     "homepage": "https://raaga.syok.my/",
-    "favicon": "",
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTAuOUSmiZBc0Yfux4kenp-JI-_z3dWqEn5OYyz0ONrA&s=10",
     "tags": "",
     "country": "Malaysia",
     "countrycode": "MY",
@@ -982,7 +982,7 @@
     "url": "http://s2.voscast.com:12084/;stream1619441439791/1",
     "url_resolved": "http://s2.voscast.com:12084/;stream1619441439791/1",
     "homepage": "https://tubetamil.fm/",
-    "favicon": "",
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfCrVXHkM7sHA1OQJ6X2vE3n0hEE6ki6mIPkH-BTBddw&s=10",
     "tags": "indian music,jaffna,radio,south indian,sri lanka,tamil,tamil fm,tamil music,tamil songs,tube tamil",
     "country": "Sri Lanka",
     "countrycode": "LK",
@@ -1368,7 +1368,7 @@
     "codec": "HLS",
     "bitrate": 0,
     "clickcount": 0,
-    "favicon": ""
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-uuqxbVucVN80EnKP4qvmf-kuYm8LUIv37PjXkyOUBw&s=10"
   },
   "akashvani:243": {
     "stationuuid": "akashvani:243",
@@ -1476,7 +1476,7 @@
     "codec": "HLS",
     "bitrate": 0,
     "clickcount": 0,
-    "favicon": ""
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-uuqxbVucVN80EnKP4qvmf-kuYm8LUIv37PjXkyOUBw&s=10"
   },
   "akashvani:4": {
     "stationuuid": "akashvani:4",
@@ -1536,7 +1536,7 @@
     "codec": "HLS",
     "bitrate": 0,
     "clickcount": 0,
-    "favicon": ""
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-uuqxbVucVN80EnKP4qvmf-kuYm8LUIv37PjXkyOUBw&s=10"
   },
   "akashvani:286": {
     "stationuuid": "akashvani:286",
