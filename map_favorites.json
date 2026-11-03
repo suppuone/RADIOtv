@@ -553,7 +553,7 @@
     "url": "https://radio-broadcast.ekantipur.com/stream",
     "url_resolved": "https://radio-broadcast.ekantipur.com/stream",
     "homepage": "https://radiokantipur.com/",
-    "favicon": "",
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhSeAoSrEWJpadYTZzHgTSR9x70RJcJ-Xk91pe3IteaQ&s=10",
     "tags": "kantipur,kathmandu,nepal,nepali",
     "country": "Nepal",
     "countrycode": "NP",
@@ -826,7 +826,7 @@
     "url": "https://usa3.fastcast4u.com/proxy/jeifm?mp=/1",
     "url_resolved": "https://usa3.fastcast4u.com/proxy/jeifm?mp=/1",
     "homepage": "http://www.jeifm.com/",
-    "favicon": "",
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRS9yXjO-kFgrfZRPdiqrkBvhv_zPqp63Q23XMY0v8R1Q&s=10",
     "tags": "klang,kollywood,malaysia,panpalai,south indian,tamil,tamil music,tamil radio",
     "country": "Malaysia",
     "countrycode": "MY",
@@ -1524,7 +1524,7 @@
     "codec": "HLS",
     "bitrate": 0,
     "clickcount": 0,
-    "favicon": ""
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_WtmrGftHJ8z1ewwN3hEJ3cW4gHIyy60hHMBU945xBQ&s=10"
   },
   "akashvani:41": {
     "stationuuid": "akashvani:41",
