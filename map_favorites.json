@@ -1134,7 +1134,7 @@
     "changeuuid": "77227da7-5631-452d-a0e9-a256bbc04a5e",
     "stationuuid": "a85a37b9-8a09-42d1-ad65-e8569a0bc0c0",
     "serveruuid": null,
-    "name": "Classic Country Legends Radio ",
+    "name": "Classic Country Legends Radio",
     "url": "http://puma.streemlion.com:3540/stream",
     "url_resolved": "http://puma.streemlion.com:3540/stream",
     "homepage": "https://the-ranch.yolasite.com/",
@@ -1637,5 +1637,16 @@
     "codec": "HLS",
     "bitrate": 0,
     "clickcount": 0
+  },
+  "https://stream.zeno.fm/74mzdgk024zuv.m3u": {
+    "stationuuid": "https://stream.zeno.fm/74mzdgk024zuv.m3u",
+    "name": "HAMARE NAGPURI",
+    "url": "https://stream.zeno.fm/74mzdgk024zuv.m3u",
+    "url_resolved": "https://stream.zeno.fm/74mzdgk024zuv.m3u",
+    "country": "INDIA",
+    "favicon": "",
+    "tags": "",
+    "codec": "",
+    "bitrate": 0
   }
 }
