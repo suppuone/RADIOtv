@@ -1669,5 +1669,38 @@
     "bitrate": 0,
     "clickcount": 0,
     "favicon": "https://upload.wikimedia.org/wikipedia/commons/5/54/BBC_Radio_4_2022.svg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original"
+  },
+  "https://stream.zeno.fm/fdgs82xkzhhvv": {
+    "stationuuid": "https://stream.zeno.fm/fdgs82xkzhhvv",
+    "name": "COOL 90s",
+    "url": "https://stream.zeno.fm/fdgs82xkzhhvv",
+    "url_resolved": "https://stream.zeno.fm/fdgs82xkzhhvv",
+    "country": "INDIA",
+    "favicon": "https://github.com/suppuone/RADIOtv/blob/main/image%20(2).jpeg",
+    "tags": "",
+    "codec": "",
+    "bitrate": 0
+  },
+  "https://stream.zeno.fm/74mzdgk024zuv": {
+    "stationuuid": "https://stream.zeno.fm/74mzdgk024zuv",
+    "name": "COOL Nagpuri",
+    "url": "https://stream.zeno.fm/74mzdgk024zuv",
+    "url_resolved": "https://stream.zeno.fm/74mzdgk024zuv",
+    "country": "INDIA",
+    "favicon": "https://github.com/suppuone/RADIOtv/blob/main/nagpuri%20logo.png",
+    "tags": "",
+    "codec": "",
+    "bitrate": 0
+  },
+  "https://centova1.dribbcast.com/proxy/vaigaifm/stream": {
+    "stationuuid": "https://centova1.dribbcast.com/proxy/vaigaifm/stream",
+    "name": "VAIGAI FM",
+    "url": "https://centova1.dribbcast.com/proxy/vaigaifm/stream",
+    "url_resolved": "https://centova1.dribbcast.com/proxy/vaigaifm/stream",
+    "country": "INDIA",
+    "favicon": "https://banner2.cleanpng.com/20180818/olg/19ea7c573be450d1e741f79734b94a29.webp",
+    "tags": "",
+    "codec": "",
+    "bitrate": 0
   }
 }
