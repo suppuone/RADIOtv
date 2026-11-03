@@ -1649,11 +1649,11 @@
     "codec": "",
     "bitrate": 0
   },
-  "https://stream.zeno.fm/in0oeizhszguv.pls": {
-    "stationuuid": "https://stream.zeno.fm/in0oeizhszguv.pls",
+  "https://stream.zeno.fm/in0oeizhszguv": {
+    "stationuuid": "https://stream.zeno.fm/in0oeizhszguv",
     "name": "COOL MAG 100",
-    "url": "https://stream.zeno.fm/in0oeizhszguv.pls",
-    "url_resolved": "https://stream.zeno.fm/in0oeizhszguv.pls",
+    "url": "https://stream.zeno.fm/in0oeizhszguv",
+    "url_resolved": "https://stream.zeno.fm/in0oeizhszguv",
     "country": "INDIA",
     "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXrZI48fXPHydu_97lYvNhIqCxyg7WWRl6_yQPYsfGEQ&s=10",
     "tags": "",
