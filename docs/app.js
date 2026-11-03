@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '4.0.5';
+  const APP_VERSION = '4.0.7';
 
   const RADIO_API = [
     'https://de1.api.radio-browser.info/json',
@@ -9,6 +9,32 @@
     'https://at1.api.radio-browser.info/json'
   ];
   const IPTV_BASE = 'https://iptv-org.github.io/iptv/';
+  const CURATED_RADIO = [
+    {stationuuid:'98adecf7-2683-4408-9be7-02d3f9098eb8',name:'BBC World Service',url:'https://as-hls-ww-live.akamaized.net/pool_87948813/live/ww/bbc_world_service/bbc_world_service.isml/bbc_world_service-audio=96000.norewind.m3u8',url_resolved:'https://as-hls-ww-live.akamaized.net/pool_87948813/live/ww/bbc_world_service/bbc_world_service.isml/bbc_world_service-audio=96000.norewind.m3u8',country:'United Kingdom',countrycode:'GB',language:'English',codec:'AAC',bitrate:96,tags:'News, World'},
+    {stationuuid:'bbc:bbc_radio_fourfm',name:'BBC Radio 4',url:'https://as-hls-ww-live.akamaized.net/pool_55057080/live/ww/bbc_radio_fourfm/bbc_radio_fourfm.isml/bbc_radio_fourfm-audio=96000.norewind.m3u8',url_resolved:'https://as-hls-ww-live.akamaized.net/pool_55057080/live/ww/bbc_radio_fourfm/bbc_radio_fourfm.isml/bbc_radio_fourfm-audio=96000.norewind.m3u8',country:'United Kingdom',countrycode:'GB',language:'English',codec:'AAC',bitrate:96,tags:'News, Speech'},
+    {stationuuid:'bbc:bbc_radio_five_live',name:'BBC Radio 5 Live',url:'https://as-hls-ww-live.akamaized.net/pool_89021708/live/ww/bbc_radio_five_live/bbc_radio_five_live.isml/bbc_radio_five_live-audio=96000.norewind.m3u8',url_resolved:'https://as-hls-ww-live.akamaized.net/pool_89021708/live/ww/bbc_radio_five_live/bbc_radio_five_live.isml/bbc_radio_five_live-audio=96000.norewind.m3u8',country:'United Kingdom',countrycode:'GB',language:'English',codec:'AAC',bitrate:96,tags:'News, Sport'},
+    {stationuuid:'7dd71b85-139b-4362-81b1-4206133a517c',name:'Hindi Gold Radio',url:'https://azuracast.vibesounds.in:8010/radio.mp3',url_resolved:'https://azuracast.vibesounds.in:8010/radio.mp3',country:'India',countrycode:'IN',language:'Hindi',codec:'MP3',bitrate:128,tags:'Music'},
+    {stationuuid:'e75a90d7-b812-49f2-a6be-a3585977ee12',name:'89.4 Tamil FM',url:'https://centova.aarenworld.com/proxy/894tamilfm/stream',url_resolved:'https://centova.aarenworld.com/proxy/894tamilfm/stream',country:'India',countrycode:'IN',language:'Tamil',codec:'MP3',bitrate:128,tags:'Music'},
+    {stationuuid:'724e92cd-9d57-4fef-b7e6-adad9fcc270d',name:'Kantipur FM',url:'https://radio-broadcast.ekantipur.com/stream',url_resolved:'https://radio-broadcast.ekantipur.com/stream',country:'Nepal',countrycode:'NP',language:'Nepali',codec:'MP3',bitrate:128,tags:'News, Music'},
+    {stationuuid:'4a1caf35-e380-4b0d-8a7b-43c46958cfe5',name:'Bhutan Broadcasting Service',url:'https://radio.bbs.bt/dz-ch',url_resolved:'https://radio.bbs.bt/dz-ch',country:'Bhutan',countrycode:'BT',language:'Dzongkha',codec:'MP3',bitrate:128,tags:'Public Radio'},
+    {stationuuid:'akashvani:240',name:'Akashvani Gangtok',url:'https://radio.wavespb.com/live/a2fa73a479445b3d/a2fa73a479445b3d.m3u8',url_resolved:'https://radio.wavespb.com/live/a2fa73a479445b3d/a2fa73a479445b3d.m3u8',country:'India',countrycode:'IN',language:'Nepali, Hindi',codec:'HLS',bitrate:0,tags:'Public Radio'},
+    {stationuuid:'akashvani:1',name:'Vividh Bharati',url:'https://radio.wavespb.com/live/146ed6ec6dea5a24/146ed6ec6dea5a24.m3u8',url_resolved:'https://radio.wavespb.com/live/146ed6ec6dea5a24/146ed6ec6dea5a24.m3u8',country:'India',countrycode:'IN',language:'Hindi',codec:'HLS',bitrate:0,tags:'Public Radio, Music'},
+    {stationuuid:'mediacorp:938NOWAAC',name:'CNA938',url:'https://playerservices.streamtheworld.com/api/livestream-redirect/938NOWAAC.aac',url_resolved:'https://playerservices.streamtheworld.com/api/livestream-redirect/938NOWAAC.aac',country:'Singapore',countrycode:'SG',language:'English',codec:'AAC',bitrate:0,tags:'News, Talk'},
+    {stationuuid:'mediacorp:SYMPHONY924AAC',name:'Symphony 924',url:'https://playerservices.streamtheworld.com/api/livestream-redirect/SYMPHONY924AAC.aac',url_resolved:'https://playerservices.streamtheworld.com/api/livestream-redirect/SYMPHONY924AAC.aac',country:'Singapore',countrycode:'SG',language:'English',codec:'AAC',bitrate:0,tags:'Classical'},
+    {stationuuid:'55d2c0f1-0853-483e-969a-8de9052e952c',name:'Outlaw – Country Music Radio',url:'https://r.bgp.rodeo/listen/outlaw/radio.mp3',url_resolved:'https://r.bgp.rodeo/listen/outlaw/radio.mp3',country:'United States',countrycode:'US',language:'English',codec:'MP3',bitrate:320,tags:'Country Music'}
+  ];
+  const CURATED_TV = [
+    {name:'DW English',group:'WORLD NEWS · HD',country:'Germany',url:'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/master.m3u8',logo:'https://i.imgur.com/8MRNFb9.png'},
+    {name:'Al Jazeera English (1080p)',group:'WORLD NEWS · 1080p',country:'Qatar',url:'https://live-hls-apps-aje-fa.getaj.net/AJE/index.m3u8',logo:'https://i.imgur.com/7bRVpnu.png'},
+    {name:'France 24 English (1080p)',group:'WORLD NEWS · 1080p',country:'France',url:'https://amg00106-france24-france24-samsunguk-qvpp8.amagi.tv/playlist/amg00106-france24-france24-samsunguk/playlist.m3u8',logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/France_24_logo_%282013%29.svg/512px-France_24_logo_%282013%29.svg.png'},
+    {name:'NHK World-Japan',group:'WORLD NEWS · HD',country:'Japan',url:'https://nhk.lls.pbs.org/index.m3u8',logo:'https://jiotvimages.cdn.jio.com/dare_images/images/NHK_World_Japan.png'},
+    {name:'ABC News (720p)',group:'WORLD NEWS · 720p',country:'United States',url:'https://abc-news-dmd-streams-1.akamaized.net/out/v1/701126012d044971b3fa89406a440133/index.m3u8',logo:'https://i.imgur.com/BrW7gk8.png'},
+    {name:'TRT World',group:'WORLD NEWS · HD',country:'Türkiye',url:'https://dash2.antik.sk/live/test_trt_world_atktv/playlist.m3u8',logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/TRT_World.svg/512px-TRT_World.svg.png'},
+    {name:'DD News (1080p)',group:'INDIA NEWS · 1080p',country:'India',url:'https://mumbai-edge.smartplaytv.in/DDNews/index.m3u8',logo:'https://ltsk-cdn.s3.eu-west-1.amazonaws.com/jumpstart/Temp_Live/cdn/HLS/Channel/transparentImages/DD%20News%20HD.png'},
+    {name:'Thanthi TV (576p)',group:'TAMIL NEWS · 576p',country:'India',url:'https://streams.tangotv.in/THANTHITV/ORIGIN/index.m3u8',logo:'https://dtil.tmsimg.com/assets/s144000_ld_h15_aa.png?lock=720x540'},
+    {name:'Kantipur TV',group:'NEPAL · HD',country:'Nepal',url:'https://ktvhdsg.ekantipur.com:8443/high_quality_85840165/hd/kantipurtv/hd_1080/chunks.m3u8',logo:'https://i.imgur.com/HEVo2Gc.png'},
+    {name:'Create (PBS)',group:'EDUCATION · HD',country:'United States',url:'https://create.lls.pbs.org/index.m3u8',logo:'https://i.imgur.com/OIJTECP.png'}
+  ];
   const COUNTRY_CODES='AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW'.split(' ');
   // Add the Supabase project URL and publishable key to enable the live presence count.
   const PRESENCE_CONFIG = {url:'',publishableKey:''};
@@ -80,11 +106,13 @@
   let radioLoading = true;
   let tvLoading = false;
   let showingRadioFavorites = false;
+  let showingRadioTopPicks = false;
   let radioFilterTouched = false;
   let radioGenreFilter = 'all';
   let favoritesMediaMode = 'tv';
   try{if(localStorage.getItem('coolmag.favorites.mode.v1')==='radio')favoritesMediaMode='radio';}catch{}
   let showingTVFavorites = false;
+  let showingTVTopPicks = false;
   let tvFilterTouched = false;
   let sharedTVFavoritesLoaded = false;
   let sharedFavoritesPromise = null;
@@ -714,6 +742,9 @@
       item.name=row.querySelector('[data-admin-name]').value.trim()||(adminFavoriteType==='radio'?'Radio station':'TV channel');
       if(adminFavoriteType==='radio')item.country=row.querySelector('[data-admin-group]').value.trim();
       else item.group=row.querySelector('[data-admin-group]').value.trim()||'Live TV';
+      const logo=row.querySelector('[data-admin-logo]').value.trim();
+      if(adminFavoriteType==='radio')item.favicon=logo;
+      else item.logo=logo;
     });
     adminFavoriteDrafts[adminFavoriteType]={favorites:adminSharedFavorites,sha:adminFavoritesSha};
   }
@@ -736,7 +767,7 @@
     const target=$('admin-favorite-list'),entries=Object.entries(adminSharedFavorites),radio=adminFavoriteType==='radio';
     $('admin-count').textContent=String(entries.length);
     if(!entries.length){target.innerHTML=`<div class="command-empty">No shared ${radio?'radio stations':'TV channels'} yet.</div>`;return;}
-    target.innerHTML=entries.map(([key,item])=>`<article class="admin-favorite-row" data-admin-row="${safe(key)}"><label class="admin-field"><span>${radio?'Station name':'Channel name'}</span><input data-admin-name value="${safe(item.name||(radio?'Radio station':'TV channel'))}"></label><label class="admin-field"><span>${radio?'Country':'Category'}</span><input data-admin-group value="${safe(radio?(item.country||''):(item.group||'Live TV'))}"></label><button class="admin-remove" data-admin-remove="${safe(key)}" type="button">Remove</button><div class="admin-favorite-url" title="${safe(item.url_resolved||item.url||key)}">${safe(item.url_resolved||item.url||key)}</div></article>`).join('');
+    target.innerHTML=entries.map(([key,item])=>{const logo=item.favicon||item.logo||item.image||item.artwork||'';return `<article class="admin-favorite-row" data-admin-row="${safe(key)}"><label class="admin-field"><span>${radio?'Station name':'Channel name'}</span><input data-admin-name value="${safe(item.name||(radio?'Radio station':'TV channel'))}"></label><label class="admin-field"><span>${radio?'Country':'Category'}</span><input data-admin-group value="${safe(radio?(item.country||''):(item.group||'Live TV'))}"></label><label class="admin-field"><span>Logo image URL</span><input data-admin-logo type="url" value="${safe(logo)}" placeholder="https://…"></label><button class="admin-remove" data-admin-remove="${safe(key)}" type="button">Remove</button><div class="admin-favorite-url" title="${safe(item.url_resolved||item.url||key)}">${safe(item.url_resolved||item.url||key)}</div></article>`;}).join('');
     target.querySelectorAll('[data-admin-remove]').forEach(button=>button.addEventListener('click',()=>{delete adminSharedFavorites[button.dataset.adminRemove];renderAdminFavorites();}));
   }
   async function loadAdminFavoriteType(type){
@@ -827,13 +858,15 @@
   }
   function renderRadio() {
     const target = $('radio-stations');
-    const source=showingRadioFavorites?Object.values(radioFavorites):radioStations;
+    const source=showingRadioTopPicks?CURATED_RADIO:showingRadioFavorites?Object.values(radioFavorites):radioStations;
     const genreRows=radioGenreFilter==='all'?source:source.filter(station=>classifyRadioGenre(station)===radioGenreFilter);
-    const rows=sortStationRows(genreRows,radioSortMode,'radio').slice(0,100);
+    const rows=(showingRadioTopPicks?genreRows:sortStationRows(genreRows,radioSortMode,'radio')).slice(0,100);
     const genreName={all:'',music:' · Music',news:' · News',talks:' · Talks',others:' · Others'}[radioGenreFilter]||'';
-    const listName=showingRadioFavorites?'Your radio favorites':`${$('country-select').selectedOptions[0]?.text||'Worldwide'} stations`;
+    const listName=showingRadioTopPicks?'Curated top radio':showingRadioFavorites?'Your radio favorites':`${$('country-select').selectedOptions[0]?.text||'Worldwide'} stations`;
+    $('radio-top-picks-button').classList.toggle('curated-active',showingRadioTopPicks);
+    $('radio-favorites-button').classList.toggle('active',showingRadioFavorites);
     $('station-list-title').textContent=listName+genreName;updateRadioGenreButtons();
-    if (!rows.length) { target.innerHTML=!showingRadioFavorites&&radioLoading&&radioGenreFilter==='all'?`<div class="station-grid skeleton-grid">${skeletonCards(6)}</div>`:`<div class="empty-state">${showingRadioFavorites?'No saved favorites in this genre yet.':'No stations match this genre. Try another country or genre.'}</div>`;renderHomeRadio();renderFavorites();return; }
+    if (!rows.length) { target.innerHTML=!showingRadioFavorites&&!showingRadioTopPicks&&radioLoading&&radioGenreFilter==='all'?`<div class="station-grid skeleton-grid">${skeletonCards(6)}</div>`:`<div class="empty-state">${showingRadioFavorites?'No saved favorites in this genre yet.':showingRadioTopPicks?'No curated stations in this genre.':'No stations match this genre. Try another country or genre.'}</div>`;renderHomeRadio();renderFavorites();return; }
     target.innerHTML = rows.map((station,index) => {
       const key = safe(radioKey(station)); const favorite = Boolean(radioFavorites[radioKey(station)]);
       const playing = currentRadio && radioKey(currentRadio) === radioKey(station);
@@ -926,7 +959,7 @@
     render('radio',radioTarget);render('tv',tvTarget);
   }
   async function searchRadio(preserveFavorites=false) {
-    if(!preserveFavorites){showingRadioFavorites=false;radioFilterTouched=true;}
+    if(!preserveFavorites){showingRadioFavorites=false;showingRadioTopPicks=false;radioFilterTouched=true;}
     radioLoading=true;
     const term = $('radio-search').value.trim(); const country = $('country-select').value;
     $('radio-status').textContent = 'Searching…';
@@ -973,7 +1006,8 @@
   $('radio-sort-select').addEventListener('change',()=>{radioSortMode=$('radio-sort-select').value;persist('coolmag.list.sort.v1',{radio:radioSortMode,tv:tvSortMode});renderRadio();renderFavorites();});
   $('country-select').addEventListener('change',()=>{const name=$('country-select').selectedOptions[0]?.text||'India';loadWeather(name,$('country-select').value==='all'?'':$('country-select').value);searchRadio();});
   $('load-more-radio').addEventListener('click',searchRadio);
-  $('radio-favorites-button').addEventListener('click',()=>{radioFilterTouched=true;showingRadioFavorites=!showingRadioFavorites;renderRadio();if(showingRadioFavorites)$('radio-status').textContent=`${Object.keys(radioFavorites).length} favorites`;else searchRadio();});
+  $('radio-favorites-button').addEventListener('click',()=>{radioFilterTouched=true;showingRadioTopPicks=false;showingRadioFavorites=!showingRadioFavorites;renderRadio();if(showingRadioFavorites)$('radio-status').textContent=`${Object.keys(radioFavorites).length} favorites`;else searchRadio();});
+  $('radio-top-picks-button').addEventListener('click',()=>{radioFilterTouched=true;showingRadioFavorites=false;showingRadioTopPicks=!showingRadioTopPicks;renderRadio();$('radio-status').textContent=showingRadioTopPicks?`${CURATED_RADIO.length} curated stations`:`${radioStations.length} stations`;if(!showingRadioTopPicks)searchRadio();});
   document.querySelectorAll('[data-radio-genre]').forEach(button=>button.addEventListener('click',()=>{radioGenreFilter=button.dataset.radioGenre||'all';renderRadio();}));
   document.querySelectorAll('[data-favorites-mode]').forEach(button=>button.addEventListener('click',()=>setFavoritesMode(button.dataset.favoritesMode)));
   setFavoritesMode(favoritesMediaMode);
@@ -1061,7 +1095,7 @@
     const country=$('tv-country-select').value;
     const file=country!=='all'?`countries/${country.toLowerCase()}.m3u`:'index.m3u';
     tvLoadController?.abort();const controller=new AbortController();tvLoadController=controller;
-    tvLoading=true;tvFilterTouched=true;showingTVFavorites=false;
+    tvLoading=true;tvFilterTouched=true;showingTVFavorites=false;showingTVTopPicks=false;
     const button=$('load-tv');button.disabled=true;button.textContent='Loading…';
     tvStations=[];$('tv-channels').innerHTML=`<div class="channel-list skeleton-grid">${skeletonCards(8)}</div>`;
     $('tv-channel-count').textContent='…';renderHomeTV();
@@ -1074,19 +1108,21 @@
     finally{if(tvLoadController===controller){tvLoading=false;tvLoadController=null;button.disabled=false;button.textContent='Load channels';}}
   }
   function filteredTV() {
+    if(showingTVTopPicks)return CURATED_TV;
     const rows=showingTVFavorites?Object.values(tvFavorites):tvStations;
     return showingTVFavorites?rows:rows.slice(0,120);
   }
   function renderTV() {
-    const rows=sortStationRows(filteredTV(),tvSortMode,'tv');const list=$('tv-channels');
+    const available=filteredTV();const rows=showingTVTopPicks?available:sortStationRows(available,tvSortMode,'tv');const list=$('tv-channels');
     const favoritesFirst=showingTVFavorites;
     $('tv-channel-count').textContent=rows.length.toLocaleString();
     $('tv-view').classList.toggle('favorites-first',favoritesFirst&&!currentTV);
     $('tv-favorites-button').classList.toggle('active',showingTVFavorites);
+    $('tv-top-picks-button').classList.toggle('curated-active',showingTVTopPicks);
     $('tv-favorites-button').innerHTML=`${showingTVFavorites?'★ Your favorites':'♡ Favorites'} <span class="count-pill" id="tv-favorite-count">${Object.keys(tvFavorites).length}</span>`;
-    $('tv-list-eyebrow').textContent=showingTVFavorites?'YOUR TV FAVORITES':'CHANNEL GUIDE';
-    $('tv-list-title').textContent=showingTVFavorites?'Favorite channels':'Live TV';
-    if(!rows.length){list.innerHTML=showingTVFavorites?`<div class="empty-state">${sharedTVFavoritesLoaded?'No TV favorites saved yet. Star channels to keep them here.':'Loading your saved TV favorites…'}</div>`:'<div class="empty-state">No matching channels. Choose a playlist or adjust your search.</div>';renderHomeTV();renderFavorites();return;}
+    $('tv-list-eyebrow').textContent=showingTVTopPicks?'CURATED TOP PICKS':showingTVFavorites?'YOUR TV FAVORITES':'CHANNEL GUIDE';
+    $('tv-list-title').textContent=showingTVTopPicks?'Recommended channels':showingTVFavorites?'Favorite channels':'Live TV';
+    if(!rows.length){list.innerHTML=showingTVTopPicks?'<div class="empty-state">The curated channel list is empty.</div>':showingTVFavorites?`<div class="empty-state">${sharedTVFavoritesLoaded?'No TV favorites saved yet. Star channels to keep them here.':'Loading your saved TV favorites…'}</div>`:'<div class="empty-state">No matching channels. Choose a playlist or adjust your search.</div>';renderHomeTV();renderFavorites();return;}
     list.innerHTML=rows.map(row=>`<article class="home-channel tv-channel ${currentTV&&currentTV.url===row.url?'active':''}" data-tv-url="${safe(row.url)}" tabindex="0" role="button"><div class="channel-art">${row.logo?`<img src="${safe(row.logo)}" loading="lazy" alt="" onerror="this.style.display='none'">`:'<span>▣</span>'}<i class="media-badge media-badge-tv" aria-label="TV live" title="TV live"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="m8 3 4 3 4-3M8 11h8M8 15h5"/></svg></i></div><button class="tile-star ${tvFavorites[tvKey(row)]?'is-favorite':''}" data-tv-star="${safe(row.url)}" aria-label="Toggle favorite">${tvFavorites[tvKey(row)]?'★':'☆'}</button><b>${safe(row.name)}</b><small>${safe(row.group||'Live television')}</small></article>`).join('');
     list.querySelectorAll('.tv-channel').forEach(item=>{const row=rows.find(candidate=>candidate.url===item.dataset.tvUrl);item.addEventListener('click',event=>{if(event.target.closest('[data-tv-star]'))return;playTV(row);});item.addEventListener('keydown',event=>{if(event.key==='Enter'){playTV(row);}});});
     list.querySelectorAll('[data-tv-star]').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();const row=rows.find(candidate=>candidate.url===button.dataset.tvStar);if(row)toggleTVFavorite(row);}));
@@ -1149,7 +1185,8 @@
   $('tv-full-previous').addEventListener('click',()=>stepFavorite(-1));
   $('tv-full-toggle').addEventListener('click',playPauseActive);
   $('tv-full-next').addEventListener('click',()=>stepFavorite(1));
-  $('tv-favorites-button').addEventListener('click',()=>{if(!Object.keys(tvFavorites).length){toast('Star a TV channel to save your first favorite.');return;}tvFilterTouched=true;showingTVFavorites=!showingTVFavorites;renderTV();if(showingTVFavorites)toast(`${Object.keys(tvFavorites).length} saved TV favorites`);});
+  $('tv-favorites-button').addEventListener('click',()=>{if(!Object.keys(tvFavorites).length){toast('Star a TV channel to save your first favorite.');return;}tvFilterTouched=true;showingTVTopPicks=false;showingTVFavorites=!showingTVFavorites;renderTV();if(showingTVFavorites)toast(`${Object.keys(tvFavorites).length} saved TV favorites`);});
+  $('tv-top-picks-button').addEventListener('click',()=>{tvFilterTouched=true;showingTVFavorites=false;showingTVTopPicks=!showingTVTopPicks;renderTV();if(!showingTVTopPicks)loadTV();});
   $('tv-current-favorite').addEventListener('click',()=>{if(currentTV)toggleTVFavorite(currentTV);});
   $('pip-toggle').addEventListener('click',async()=>{if(!currentTV){toast('Start a TV channel first.');return;}try{if(document.pictureInPictureElement)await document.exitPictureInPicture();else if(tvVideo.requestPictureInPicture)await tvVideo.requestPictureInPicture();else toast('Picture in picture is not supported by this browser.');}catch{toast('Picture in picture is unavailable for this stream.');}});
   $('cast-toggle').addEventListener('click',async()=>{if(!currentTV){toast('Start a TV channel first.');return;}try{if(tvVideo.remote?.prompt)await tvVideo.remote.prompt();else if(tvVideo.webkitShowPlaybackTargetPicker)tvVideo.webkitShowPlaybackTargetPicker();else toast('Casting is not supported by this browser.');}catch{toast('No cast device is available.');}});

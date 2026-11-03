@@ -7,10 +7,10 @@
   <meta name="description" content="COOLmagRaTv — internet radio and live television in one simple media center.">
   <title>COOLmagRaTv · Internet Radio & Live TV</title>
   <link rel="preconnect" href="https://de1.api.radio-browser.info">
-  <link rel="stylesheet" href="style.css?v=4.0.4">
+  <link rel="stylesheet" href="style.css?v=4.0.7">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/hls.js@1.5.18/dist/hls.min.js"></script>
-  <script defer src="app.js?v=4.0.5"></script>
+  <script defer src="app.js?v=4.0.7"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -73,6 +73,7 @@
           <label class="searchbox"><span>⌕</span><input id="radio-search" type="search" placeholder="Search stations, music, or language…" autocomplete="off"></label>
           <label class="select-wrap"><span>COUNTRY</span><select id="country-select"><option value="IN">India</option></select></label>
           <button class="button primary" id="radio-search-button">Search</button>
+          <button class="button ghost" id="radio-top-picks-button" type="button">★ Top picks</button>
           <button class="button ghost" id="radio-favorites-button">♡ Favorites <span class="count-pill" id="radio-favorite-count">0</span></button>
         </div>
         <div class="radio-genre-filters" role="group" aria-label="Filter radio stations by genre"><span>GENRE</span><button type="button" class="active" data-radio-genre="all" aria-pressed="true">All</button><button type="button" data-radio-genre="music" aria-pressed="false">Music</button><button type="button" data-radio-genre="news" aria-pressed="false">News</button><button type="button" data-radio-genre="talks" aria-pressed="false">Talks</button><button type="button" data-radio-genre="others" aria-pressed="false">Others</button></div>
@@ -84,7 +85,7 @@
       </section>
 
       <section class="view-panel" id="tv-view" aria-label="Live TV">
-        <div class="view-toolbar"><label class="select-wrap"><span>COUNTRY</span><select id="tv-country-select"><option value="all">All countries</option><option value="IN">India</option></select></label><label class="select-wrap sort-wrap"><span>SORT</span><select id="tv-sort-select"><option value="name">A–Z</option><option value="genre">Genre / category</option></select></label><button class="button primary" id="load-tv">Load channels</button><button class="button ghost" id="tv-favorites-button">♡ Favorites <span class="count-pill" id="tv-favorite-count">0</span></button></div>
+        <div class="view-toolbar"><label class="select-wrap"><span>COUNTRY</span><select id="tv-country-select"><option value="all">All countries</option><option value="IN">India</option></select></label><label class="select-wrap sort-wrap"><span>SORT</span><select id="tv-sort-select"><option value="name">A–Z</option><option value="genre">Genre / category</option></select></label><button class="button primary" id="load-tv">Load channels</button><button class="button ghost" id="tv-top-picks-button" type="button">★ Top picks</button><button class="button ghost" id="tv-favorites-button">♡ Favorites <span class="count-pill" id="tv-favorite-count">0</span></button></div>
         <div class="orientation-hint">For the best TV view, turn your phone sideways.</div>
         <div class="tv-layout">
         <article class="video-card"><div class="video-stage" id="video-stage"><div class="video-placeholder"><span class="play-orb">▶</span><b>Choose a channel</b><strong class="tv-scroll-hint">SCROLL DOWN TO SELECT</strong><small>Compatible live streams play here.</small></div><video id="tv-player" controls playsinline></video><div class="video-inline-controls"><button id="cinema-toggle" aria-label="Toggle cinema mode" aria-pressed="false" title="Cinema mode">◉</button><button id="video-fullscreen" aria-label="Full screen TV" title="Full screen">⛶</button></div><header class="video-fullscreen-header"><strong id="fullscreen-tv-name">Live TV</strong><small id="fullscreen-next-favorite">No saved TV favorites</small></header><div class="video-fullscreen-bottom" aria-hidden="true"></div><div class="video-fullscreen-controls" role="group" aria-label="Full-screen TV controls"><button id="tv-full-home" aria-label="Go to Home" title="Home">HOME</button><button id="tv-full-previous" aria-label="Previous favorite channel" title="Previous favorite">⏮</button><button id="tv-full-toggle" class="fullscreen-play" aria-label="Play TV" title="Play / pause">▶</button><button id="tv-full-next" aria-label="Next favorite channel" title="Next favorite">⏭</button></div></div><div class="video-meta"><div class="tv-playing-title"><span class="eyebrow">NOW PLAYING</span><h2 id="tv-now-playing">No channel selected</h2></div><button class="star-button" id="tv-current-favorite" title="Add to favorites" aria-label="Add current channel to favorites">♡</button></div><p class="stream-note" id="tv-note">Streams are provided by their broadcasters.</p></article>
