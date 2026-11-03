@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '4.0.4';
+  const APP_VERSION = '4.0.5';
 
   const RADIO_API = [
     'https://de1.api.radio-browser.info/json',
@@ -1171,9 +1171,10 @@
   }
   function updateClock(){try{$('local-time').textContent=new Intl.DateTimeFormat('en-GB',{timeZone:selectedTimezone,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());$('local-date').textContent=new Intl.DateTimeFormat('en',{timeZone:selectedTimezone,weekday:'short',day:'2-digit',month:'short'}).format(new Date()).toUpperCase();}catch{$('local-time').textContent=new Date().toLocaleTimeString();}}
 
-  const HOME_NEWS_CACHE_KEY='coolmag.home.news-tickers.v1';
-  const HOME_NEWS_TTL=20*60*1000;
+  const HOME_NEWS_CACHE_KEY='coolmag.home.news-tickers.v2';
+  const HOME_NEWS_TTL=5*60*1000;
   const CITY_NEWS=['Chennai','Kolkata','Delhi','Mumbai','Gangtok','Port Blair'];
+  const THE_HINDU_NATIONAL_FEED='https://www.thehindu.com/news/national/feeder/default.rss';
   const GOOGLE_NEWS_FEED=(query,locale='en-IN',region='IN')=>query
     ?`https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=${locale}&gl=${region}&ceid=${region}:${locale.split('-')[0]}`
     :`https://news.google.com/rss/headlines/section/topic/WORLD?hl=${locale}&gl=${region}&ceid=${region}:${locale.split('-')[0]}`;
@@ -1203,7 +1204,7 @@
   }
   function renderHomeNews(data){
     const worldUrl=GOOGLE_NEWS_FEED(null,'en-US','US');
-    const nationalUrl=GOOGLE_NEWS_FEED('India national news','en-IN','IN');
+    const nationalUrl=THE_HINDU_NATIONAL_FEED;
     const cityStories=CITY_NEWS.flatMap(city=>{const stories=(data.cities?.[city]||[]).slice(0,1);return stories.length?stories.map(item=>({...item,title:`${city} · ${item.title}`})):[{title:`${city} · Latest headlines`,link:GOOGLE_NEWS_FEED(`${city} India news when:7d`,'en-IN','IN')}];});
     const worldStories=(data.world||[]).slice(0,4);
     const nationalStories=(data.national||[]).slice(0,4);
@@ -1218,7 +1219,7 @@
     const cached=getHomeNewsCache();if(cached)renderHomeNews(cached);
     const feeds=[
       ['world',GOOGLE_NEWS_FEED(null,'en-US','US')],
-      ['national',GOOGLE_NEWS_FEED('India national news','en-IN','IN')],
+      ['national',THE_HINDU_NATIONAL_FEED],
       ...CITY_NEWS.map(city=>[city,GOOGLE_NEWS_FEED(`${city} India news when:7d`,'en-IN','IN')])
     ];
     try{
