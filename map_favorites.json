@@ -511,7 +511,7 @@
     "stationuuid": "1e64ded1-bc95-479c-8f67-e98ad15010ad",
     "serveruuid": null,
     "name": "British Tamil Radio",
-    "url": "https://hello.citrus3.com:2020/tunein/britishindiantamilradio/stream/pls",
+    "url": "https://hello.citrus3.com:8188/stream",
     "url_resolved": "https://hello.citrus3.com:8188/stream",
     "homepage": "https://www.bitronline.com/",
     "favicon": "https://www.bitronline.com/wp-content/uploads/2023/12/cropped-logo_radio_main-1-300x300.png",
@@ -592,7 +592,7 @@
     "url": "https://streaming.softnep.net:10994/;stream.nsv",
     "url_resolved": "https://streaming.softnep.net:10994/;stream.nsv",
     "homepage": "https://www.butwaldiary.com/",
-    "favicon": "",
+    "favicon": "https://cdn-radiotime-logos.tunein.com/s48020d.png",
     "tags": "",
     "country": "Nepal",
     "countrycode": "NP",
@@ -1134,7 +1134,7 @@
     "changeuuid": "77227da7-5631-452d-a0e9-a256bbc04a5e",
     "stationuuid": "a85a37b9-8a09-42d1-ad65-e8569a0bc0c0",
     "serveruuid": null,
-    "name": "Classic Country Legends Radio ",
+    "name": "Classic Country Legends Radio",
     "url": "http://puma.streemlion.com:3540/stream",
     "url_resolved": "http://puma.streemlion.com:3540/stream",
     "homepage": "https://the-ranch.yolasite.com/",
@@ -1217,7 +1217,8 @@
     "tags": "Added by you",
     "codec": "",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "e928bf7b-7de2-4447-87ec-369d1be1b9f5": {
     "changeuuid": "18f6e510-58f2-4e63-b86f-5475de16f8ab",
@@ -1263,7 +1264,7 @@
     "stationuuid": "6de7e6da-5c4f-4264-ab2d-bbc731219f7d",
     "serveruuid": null,
     "name": "Hits Of Bollywood",
-    "url": "http://stream.zeno.fm/8ty8szwpwfeuv.m3u",
+    "url": "http://stream.zeno.fm/8ty8szwpwfeuv",
     "url_resolved": "http://stream.zeno.fm/8ty8szwpwfeuv",
     "homepage": "http://www.hitsofbollywood.com/",
     "favicon": "",
@@ -1306,7 +1307,8 @@
     "tags": "ANDAMAN NICOBAR, Hindi, English, Nicobarese",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": "https://radiosindia.com/images/airtamil.jpg"
   },
   "akashvani:240": {
     "stationuuid": "akashvani:240",
@@ -1317,7 +1319,8 @@
     "tags": "SIKKIM, Nepali, Hindi",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": "https://radiosindia.com/images/airtamil.jpg"
   },
   "akashvani:293": {
     "stationuuid": "akashvani:293",
@@ -1328,7 +1331,8 @@
     "tags": "WEST BENGAL, Bengali",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": "https://radiosindia.com/images/airtamil.jpg"
   },
   "akashvani:241": {
     "stationuuid": "akashvani:241",
@@ -1339,7 +1343,8 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "akashvani:297": {
     "stationuuid": "akashvani:297",
@@ -1350,7 +1355,8 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "akashvani:242": {
     "stationuuid": "akashvani:242",
@@ -1361,7 +1367,8 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "akashvani:243": {
     "stationuuid": "akashvani:243",
@@ -1372,7 +1379,8 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": "https://radiosindia.com/images/airtamil.jpg"
   },
   "akashvani:244": {
     "stationuuid": "akashvani:244",
@@ -1383,7 +1391,8 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "akashvani:246": {
     "stationuuid": "akashvani:246",
@@ -1394,7 +1403,8 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": "https://radiosindia.com/images/airtamil.jpg"
   },
   "akashvani:305": {
     "stationuuid": "akashvani:305",
@@ -1405,7 +1415,8 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": "https://radiosindia.com/images/airtamil.jpg"
   },
   "akashvani:249": {
     "stationuuid": "akashvani:249",
@@ -1416,7 +1427,8 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": "https://radiosindia.com/images/airtamil.jpg"
   },
   "akashvani:252": {
     "stationuuid": "akashvani:252",
@@ -1427,7 +1439,8 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": "https://radiosindia.com/images/airtamil.jpg"
   },
   "akashvani:251": {
     "stationuuid": "akashvani:251",
@@ -1438,7 +1451,8 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": "https://radiosindia.com/images/airtamil.jpg"
   },
   "akashvani:5": {
     "stationuuid": "akashvani:5",
@@ -1449,7 +1463,8 @@
     "tags": "NATIONAL, Hindi, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "akashvani:1": {
     "stationuuid": "akashvani:1",
@@ -1460,7 +1475,8 @@
     "tags": "NATIONAL, Hindi",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "akashvani:4": {
     "stationuuid": "akashvani:4",
@@ -1471,7 +1487,8 @@
     "tags": "NATIONAL, Hindi, Tamil, Telugu, Malayalam",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "akashvani:2": {
     "stationuuid": "akashvani:2",
@@ -1482,7 +1499,8 @@
     "tags": "DELHI, Hindi",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "akashvani:3": {
     "stationuuid": "akashvani:3",
@@ -1493,7 +1511,8 @@
     "tags": "DELHI, Hindi",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "akashvani:40": {
     "stationuuid": "akashvani:40",
@@ -1504,7 +1523,8 @@
     "tags": "DELHI, Hindi",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "akashvani:41": {
     "stationuuid": "akashvani:41",
@@ -1515,7 +1535,8 @@
     "tags": "DELHI, Hindi",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "akashvani:286": {
     "stationuuid": "akashvani:286",
@@ -1526,7 +1547,8 @@
     "tags": "WEST BENGAL, Bengali, Hindi, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "mediacorp:OLI968FMAAC": {
     "stationuuid": "mediacorp:OLI968FMAAC",
@@ -1537,7 +1559,8 @@
     "tags": "Tamil · News and entertainment",
     "codec": "AAC",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "mediacorp:INDIEGO_S01AAC_48": {
     "stationuuid": "mediacorp:INDIEGO_S01AAC_48",
@@ -1548,7 +1571,8 @@
     "tags": "English · Indie · Digital",
     "codec": "AAC",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "mediacorp:SYMPHONY924AAC": {
     "stationuuid": "mediacorp:SYMPHONY924AAC",
@@ -1559,7 +1583,8 @@
     "tags": "English · Classical",
     "codec": "AAC",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "mediacorp:938NOWAAC": {
     "stationuuid": "mediacorp:938NOWAAC",
@@ -1570,7 +1595,8 @@
     "tags": "English · News and talk",
     "codec": "AAC",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "mediacorp:987FMAAC": {
     "stationuuid": "mediacorp:987FMAAC",
@@ -1581,7 +1607,8 @@
     "tags": "English · Pop",
     "codec": "AAC",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "mediacorp:GOLD905AAC": {
     "stationuuid": "mediacorp:GOLD905AAC",
@@ -1592,7 +1619,8 @@
     "tags": "English · Classic hits",
     "codec": "AAC",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "mediacorp:CLASS95AAC": {
     "stationuuid": "mediacorp:CLASS95AAC",
@@ -1603,7 +1631,8 @@
     "tags": "English · Pop",
     "codec": "AAC",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": ""
   },
   "bbc:bbc_world_service": {
     "stationuuid": "bbc:bbc_world_service",
@@ -1614,7 +1643,8 @@
     "tags": "World news",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": "https://play-lh.googleusercontent.com/_0gXszv2P2SN5zyjegLGOHG7iUgPjvPOhySSsvdF30sb83r6A-711GkN0YhK_j_QPp3cktFN4gpBT2p_D8NN=w240-h480-rw"
   },
   "bbc:bbc_radio_five_live": {
     "stationuuid": "bbc:bbc_radio_five_live",
@@ -1625,7 +1655,8 @@
     "tags": "News and sport",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScW7kmLUxjMgFAHq_na8DNc4E-yb7HH5uk4DvJZ4x3n6gKmuJuEQ7NPD4&s"
   },
   "bbc:bbc_radio_fourfm": {
     "stationuuid": "bbc:bbc_radio_fourfm",
@@ -1636,6 +1667,7 @@
     "tags": "News and speech",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0
+    "clickcount": 0,
+    "favicon": "https://upload.wikimedia.org/wikipedia/commons/5/54/BBC_Radio_4_2022.svg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original"
   }
 }
