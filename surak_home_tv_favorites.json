@@ -364,54 +364,5 @@
     "logo": "https://provider-static.plex.tv/epg/cms/production/29af70d1-d3ba-4a16-bc4d-bd99e7e7def4/hallmark-movies-and-more_color.png",
     "url": "https://dbrb49pjoymg4.cloudfront.net/v1/master/3fec3e5cac39a52b2132f9c66c83dae043dc17d4/prod_default_xumo-ams-aws/master.m3u8?ads.xumo_channelId=99991709",
     "options": []
-  },
-  "https://w6oy7x7jlxrg-hls-live.5centscdn.com/MandETV/955ad3298db330b5ee880c2c9e6f23a0.sdp/playlist.m3u8": {
-    "name": "Scorch TV (1080p)",
-    "url": "https://w6oy7x7jlxrg-hls-live.5centscdn.com/MandETV/955ad3298db330b5ee880c2c9e6f23a0.sdp/playlist.m3u8",
-    "group": "Music",
-    "logo": "https://i.imgur.com/CNszwj1.png",
-    "country": ""
-  },
-  "https://6zklxwavdw9b-hls-live.5centscdn.com/RIDDIMNHOPE/0954119dc19d9003dd5f4bb37b3f559e.sdp/playlist.m3u8": {
-    "name": "Riddim & Hope TV",
-    "url": "https://6zklxwavdw9b-hls-live.5centscdn.com/RIDDIMNHOPE/0954119dc19d9003dd5f4bb37b3f559e.sdp/playlist.m3u8",
-    "group": "Religious",
-    "logo": "https://i.imgur.com/c27k0Bd.png",
-    "country": ""
-  },
-  "https://cdn4.mjunoon.tv:8087/streamtest/140M/chunks.m3u8": {
-    "name": "365 News",
-    "url": "https://cdn4.mjunoon.tv:8087/streamtest/140M/chunks.m3u8",
-    "group": "News",
-    "logo": "https://i.imgur.com/8I6PWof.png",
-    "country": ""
-  },
-  "https://cdn.rabta.stream/M-News/index.m3u8": {
-    "name": "M News (1080p)",
-    "url": "https://cdn.rabta.stream/M-News/index.m3u8",
-    "group": "News",
-    "logo": "https://mnews.pk/wp-content/uploads/2025/10/mnews-logo-news.png",
-    "country": ""
-  },
-  "https://136044159.r.cdnsun.net/storychannel.m3u8": {
-    "name": "StoryChannel TV (720p)",
-    "url": "https://136044159.r.cdnsun.net/storychannel.m3u8",
-    "group": "Culture",
-    "logo": "https://i.imgur.com/ZBV6xph.png",
-    "country": ""
-  },
-  "http://122.248.43.242:1935/JTVSURABAYA/_definst_/myStream/playlist.m3u8": {
-    "name": "JTV (720p)",
-    "url": "http://122.248.43.242:1935/JTVSURABAYA/_definst_/myStream/playlist.m3u8",
-    "group": "General",
-    "logo": "https://i.imgur.com/mIDWIQk.png",
-    "country": ""
-  },
-  "https://sunplay-cdn.bitratelabs.com/live/local-channel/ntv-e3d4300b49c8c901e9339174215d7580/index.m3u8": {
-    "name": "NTV (Maldives)",
-    "url": "https://sunplay-cdn.bitratelabs.com/live/local-channel/ntv-e3d4300b49c8c901e9339174215d7580/index.m3u8",
-    "group": "General",
-    "logo": "https://i.imgur.com/jnXpcwV.png",
-    "country": ""
   }
 }

@@ -14,6 +14,8 @@ The two lists publish independently, so editing one does not overwrite the other
 ## Features
 
 - Radio Browser station discovery, country selection, and personal radio favorites.
+- Music, News, Talks, and Others buttons filter the current radio list; choose Favorites to curate saved stations by genre.
+- Favorites opens the TV list directly and switches between Radio and TV with icon tabs, remembering the last selection.
 - IPTV-org live channel browsing, country filtering, and personal TV favorites.
 - Shared radio and TV favorite lists managed from Settings.
 - Recent streams, news links, phone-friendly cards, fullscreen TV, and player controls.

@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '4.0.0';
+  const APP_VERSION = '4.0.2';
 
   const RADIO_API = [
     'https://de1.api.radio-browser.info/json',
@@ -65,6 +65,9 @@
   let tvLoading = false;
   let showingRadioFavorites = false;
   let radioFilterTouched = false;
+  let radioGenreFilter = 'all';
+  let favoritesMediaMode = 'tv';
+  try{if(localStorage.getItem('coolmag.favorites.mode.v1')==='radio')favoritesMediaMode='radio';}catch{}
   let showingTVFavorites = false;
   let tvFilterTouched = false;
   let sharedTVFavoritesLoaded = false;
@@ -796,11 +799,25 @@
   function closeAdminFavorites(){
     $('admin-overlay').hidden=true;document.body.classList.remove('admin-open');
   }
+  function classifyRadioGenre(station){
+    const text=`${station.name||''} ${station.tags||''} ${station.genre||''}`.toLowerCase();
+    if(/\b(news|bulletin|current affairs|headlines|weather|business news)\b/.test(text))return 'news';
+    if(/\b(talk|spoken|speech|discussion|interview|podcast|chat|debate)\b/.test(text))return 'talks';
+    if(/\b(music|song|pop|rock|jazz|classical|dance|electronic|folk|oldies|hits|soul|country)\b/.test(text))return 'music';
+    return 'others';
+  }
+  function updateRadioGenreButtons(){
+    document.querySelectorAll('[data-radio-genre]').forEach(button=>{const active=button.dataset.radioGenre===radioGenreFilter;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
+  }
   function renderRadio() {
     const target = $('radio-stations');
-    const rows = sortStationRows(showingRadioFavorites ? Object.values(radioFavorites) : radioStations,radioSortMode,'radio').slice(0,100);
-    $('station-list-title').textContent = showingRadioFavorites ? 'Your radio favorites' : `${$('country-select').selectedOptions[0]?.text || 'Worldwide'} stations`;
-    if (!rows.length) { target.innerHTML = radioLoading?`<div class="station-grid skeleton-grid">${skeletonCards(6)}</div>`:'<div class="empty-state">No stations found. Try another search or country.</div>';renderHomeRadio();renderFavorites();return; }
+    const source=showingRadioFavorites?Object.values(radioFavorites):radioStations;
+    const genreRows=radioGenreFilter==='all'?source:source.filter(station=>classifyRadioGenre(station)===radioGenreFilter);
+    const rows=sortStationRows(genreRows,radioSortMode,'radio').slice(0,100);
+    const genreName={all:'',music:' · Music',news:' · News',talks:' · Talks',others:' · Others'}[radioGenreFilter]||'';
+    const listName=showingRadioFavorites?'Your radio favorites':`${$('country-select').selectedOptions[0]?.text||'Worldwide'} stations`;
+    $('station-list-title').textContent=listName+genreName;updateRadioGenreButtons();
+    if (!rows.length) { target.innerHTML=!showingRadioFavorites&&radioLoading&&radioGenreFilter==='all'?`<div class="station-grid skeleton-grid">${skeletonCards(6)}</div>`:`<div class="empty-state">${showingRadioFavorites?'No saved favorites in this genre yet.':'No stations match this genre. Try another country or genre.'}</div>`;renderHomeRadio();renderFavorites();return; }
     target.innerHTML = rows.map((station,index) => {
       const key = safe(radioKey(station)); const favorite = Boolean(radioFavorites[radioKey(station)]);
       const playing = currentRadio && radioKey(currentRadio) === radioKey(station);
@@ -848,9 +865,16 @@
     target.querySelectorAll('[data-home-tv]').forEach(card=>{const row=rows.find(item=>item.url===card.dataset.homeTv);card.addEventListener('click',event=>{if(event.target.closest('[data-home-tv-star]'))return;setView('tv');playTV(row);});card.addEventListener('keydown',event=>{if(event.key==='Enter'){setView('tv');playTV(row);}});});
     target.querySelectorAll('[data-home-tv-star]').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();const row=rows.find(item=>item.url===button.dataset.homeTvStar);if(row)toggleTVFavorite(row);}));
   }
+  function setFavoritesMode(mode){
+    favoritesMediaMode=mode==='radio'?'radio':'tv';
+    $('favorite-radio-panel').hidden=favoritesMediaMode!=='radio';$('favorite-tv-panel').hidden=favoritesMediaMode!=='tv';
+    document.querySelectorAll('[data-favorites-mode]').forEach(button=>{const active=button.dataset.favoritesMode===favoritesMediaMode;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));});
+    try{localStorage.setItem('coolmag.favorites.mode.v1',favoritesMediaMode);}catch{}
+  }
   function renderFavorites() {
     const radioTarget=$('favorite-radio-grid'),tvTarget=$('favorite-tv-grid');if(!radioTarget||!tvTarget)return;
     const radios=sortStationRows(Object.values(radioFavorites),radioSortMode,'radio'),tvs=sortStationRows(Object.values(tvFavorites),tvSortMode,'tv');
+    $('favorites-radio-count').textContent=String(radios.length);$('favorites-tv-count').textContent=String(tvs.length);
     radioTarget.innerHTML=radios.length?radios.map(station=>`<article class="favorite-row" data-fav-radio="${safe(radioKey(station))}"><span>♫</span><div><b>${safe(station.name||'Radio station')}</b><small>${safe(station.country||'Internet radio')}</small></div><button class="tile-star is-favorite" data-fav-radio-remove="${safe(radioKey(station))}" aria-label="Remove favorite">★</button></article>`).join(''):'<div class="empty-state">No radio favorites saved yet.</div>';
     tvTarget.innerHTML=tvs.length?tvs.map(station=>`<article class="favorite-row" data-fav-tv="${safe(station.url)}"><span>▣</span><div><b>${safe(station.name||'TV channel')}</b><small>${safe(station.group||'Live television')}</small></div><button class="tile-star is-favorite" data-fav-tv-remove="${safe(station.url)}" aria-label="Remove favorite">★</button></article>`).join(''):'<div class="empty-state">No TV favorites saved yet.</div>';
     radioTarget.querySelectorAll('[data-fav-radio]').forEach(card=>card.addEventListener('click',event=>{if(event.target.closest('[data-fav-radio-remove]'))return;const station=radios.find(item=>radioKey(item)===card.dataset.favRadio);if(station){setView('radio');playRadio(station);}}));
@@ -934,6 +958,9 @@
   $('country-select').addEventListener('change',()=>{const name=$('country-select').selectedOptions[0]?.text||'India';loadWeather(name,$('country-select').value==='all'?'':$('country-select').value);searchRadio();});
   $('load-more-radio').addEventListener('click',searchRadio);
   $('radio-favorites-button').addEventListener('click',()=>{radioFilterTouched=true;showingRadioFavorites=!showingRadioFavorites;renderRadio();if(showingRadioFavorites)$('radio-status').textContent=`${Object.keys(radioFavorites).length} favorites`;else searchRadio();});
+  document.querySelectorAll('[data-radio-genre]').forEach(button=>button.addEventListener('click',()=>{radioGenreFilter=button.dataset.radioGenre||'all';renderRadio();}));
+  document.querySelectorAll('[data-favorites-mode]').forEach(button=>button.addEventListener('click',()=>setFavoritesMode(button.dataset.favoritesMode)));
+  setFavoritesMode(favoritesMediaMode);
 
   function tvKey(station) { return station.url; }
   function toggleTVFavorite(station) {
