@@ -1134,7 +1134,7 @@
     "changeuuid": "77227da7-5631-452d-a0e9-a256bbc04a5e",
     "stationuuid": "a85a37b9-8a09-42d1-ad65-e8569a0bc0c0",
     "serveruuid": null,
-    "name": "Classic Country Legends Radio",
+    "name": "Classic Country Legends Radio ",
     "url": "http://puma.streemlion.com:3540/stream",
     "url_resolved": "http://puma.streemlion.com:3540/stream",
     "homepage": "https://the-ranch.yolasite.com/",
@@ -1637,38 +1637,5 @@
     "codec": "HLS",
     "bitrate": 0,
     "clickcount": 0
-  },
-  "https://stream.zeno.fm/74mzdgk024zuv": {
-    "stationuuid": "https://stream.zeno.fm/74mzdgk024zuv",
-    "name": "HAMARE NAGPURI",
-    "url": "https://stream.zeno.fm/74mzdgk024zuv",
-    "url_resolved": "https://stream.zeno.fm/74mzdgk024zuv",
-    "country": "INDIA",
-    "favicon": "",
-    "tags": "",
-    "codec": "",
-    "bitrate": 0
-  },
-  "https://stream.zeno.fm/in0oeizhszguv": {
-    "stationuuid": "https://stream.zeno.fm/in0oeizhszguv",
-    "name": "COOL MAG 100",
-    "url": "https://stream.zeno.fm/in0oeizhszguv",
-    "url_resolved": "https://stream.zeno.fm/in0oeizhszguv",
-    "country": "INDIA",
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXrZI48fXPHydu_97lYvNhIqCxyg7WWRl6_yQPYsfGEQ&s=10",
-    "tags": "",
-    "codec": "",
-    "bitrate": 0
-  },
-  "https://stream.zeno.fm/fdgs82xkzhhvv": {
-    "stationuuid": "https://stream.zeno.fm/fdgs82xkzhhvv",
-    "name": "COOL RETRO 90s",
-    "url": "https://stream.zeno.fm/fdgs82xkzhhvv",
-    "url_resolved": "https://stream.zeno.fm/fdgs82xkzhhvv",
-    "country": "INDIA",
-    "favicon": "https://github.com/suppuone/RADIOtv/blob/main/image%20(2).jpeg",
-    "tags": "",
-    "codec": "",
-    "bitrate": 0
   }
 }

@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '4.0.3';
+  const APP_VERSION = '4.0.4';
 
   const RADIO_API = [
     'https://de1.api.radio-browser.info/json',
@@ -40,6 +40,22 @@
   const WMO = {0:'Clear sky',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Rime fog',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Light snow',73:'Snow',75:'Heavy snow',80:'Rain showers',81:'Showers',82:'Heavy showers',95:'Thunderstorm',96:'Thunderstorm with hail',99:'Strong thunderstorm'};
   const $ = (id) => document.getElementById(id);
   const safe = (value) => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  function normalizeImageURL(value){
+    try{
+      const image=new URL(String(value||'').trim());if(image.protocol!=='https:')return '';
+      if(image.hostname.toLowerCase()==='github.com'){
+        const parts=image.pathname.split('/').filter(Boolean),marker=parts.indexOf('blob'),rawMarker=parts.indexOf('raw');
+        const index=marker>=0?marker:rawMarker;
+        if(index===2&&parts.length>4){image.hostname='raw.githubusercontent.com';image.pathname='/'+[parts[0],parts[1],...parts.slice(3)].join('/');image.search='';image.hash='';}
+      }
+      return image.href;
+    }catch{return '';}
+  }
+  function radioArtwork(station){
+    const url=normalizeImageURL(station.favicon||station.logo||station.image||station.artwork);
+    const initials=safe((station.name||'FM').trim().slice(0,2).toUpperCase());
+    return url?`<img src="${safe(url)}" loading="lazy" alt="" onerror="this.onerror=null;this.replaceWith(document.createTextNode('♫'))">`:`<span>${initials}</span>`;
+  }
   const PLAYER_ICONS={
     shuffle:'<svg class="player-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 7h2.5a5 5 0 0 1 3.7 1.7l5.6 6.6a5 5 0 0 0 3.7 1.7H21m-4-4 4 4-4 4M3 17h2.5a5 5 0 0 0 3.7-1.7l1.1-1.3M17 3l4 4-4 4m4-4h-2.5a5 5 0 0 0-3.7 1.7l-1.1 1.3"/></svg>',
     previous:'<svg class="player-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 5v14"/><path d="m19 6-9 6 9 6V6Zm-9 0-9 6 9 6V6Z" fill="currentColor" stroke="none"/></svg>',
@@ -823,7 +839,7 @@
       const playing = currentRadio && radioKey(currentRadio) === radioKey(station);
       const tags = (station.tags || '').split(',').map(v => v.trim()).filter(Boolean).slice(0,2).join(' · ');
       const meta = [station.country || 'Internet radio', tags || station.codec || 'Live stream',station.bitrate?`${station.bitrate} KBPS`:null].filter(Boolean).join(' · ');
-      const art=station.favicon?`<img src="${safe(station.favicon)}" loading="lazy" alt="" onerror="this.style.display='none'">`:`<span>${safe((station.name||'FM').trim().slice(0,2).toUpperCase())}</span>`;
+      const art=radioArtwork(station);
       return `<article class="home-channel radio-library-channel ${playing?'active':''}" data-radio-key="${key}" tabindex="0" role="button" aria-label="Play ${safe(station.name)}"><div class="channel-art">${art}<i class="media-badge media-badge-radio" aria-label="Radio station" title="Radio"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="m6 5 12-3M7 12h.01M7 16h.01m4-4h6m-6 4h6"/></svg></i></div><button class="tile-star ${favorite?'is-favorite':''}" data-radio-star="${key}" title="${favorite?'Remove':'Add'} favorite" aria-label="${favorite?'Remove':'Add'} favorite">${favorite?'★':'☆'}</button><b>${safe(station.name || 'Unnamed station')}</b><small>${safe(meta)}</small></article>`;
     }).join('');
     target.querySelectorAll('.radio-library-channel').forEach(card => {
@@ -847,7 +863,7 @@
     target.innerHTML=rows.map((station,index)=>{
       const key=safe(radioKey(station));const favorite=Boolean(radioFavorites[radioKey(station)]);
       const initials=safe((station.name||'FM').trim().slice(0,2).toUpperCase());
-      const logo=station.favicon?`<img src="${safe(station.favicon)}" loading="lazy" alt="" onerror="this.style.display='none'">`:`<span>${initials}</span>`;
+      const logo=radioArtwork(station);
       const active=currentRadio&&radioKey(currentRadio)===radioKey(station);
       return `<article class="home-channel home-radio-channel ${active?'active':''}" data-home-radio="${key}" tabindex="0" role="button" aria-label="Play ${safe(station.name||'Radio station')}"><div class="channel-art">${logo}<i class="media-badge media-badge-radio" aria-label="Radio station" title="Radio"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="m6 5 12-3M7 12h.01M7 16h.01m4-4h6m-6 4h6"/></svg></i></div><button class="tile-star ${favorite?'is-favorite':''}" data-home-radio-star="${key}" aria-label="Toggle favorite">${favorite?'★':'☆'}</button><b>${safe(station.name||'Radio station')}</b><small>${safe(station.country||'Internet radio')}${station.bitrate?` · ${safe(station.bitrate)} KBPS`:''}</small></article>`;
     }).join('');
