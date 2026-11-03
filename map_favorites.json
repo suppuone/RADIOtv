@@ -1648,5 +1648,16 @@
     "tags": "",
     "codec": "",
     "bitrate": 0
+  },
+  "https://stream.zeno.fm/74mzdgk024zuv": {
+    "stationuuid": "https://stream.zeno.fm/74mzdgk024zuv",
+    "name": "COOL Nagpuri",
+    "url": "https://stream.zeno.fm/74mzdgk024zuv",
+    "url_resolved": "https://stream.zeno.fm/74mzdgk024zuv",
+    "country": "INDIA",
+    "favicon": "https://github.com/suppuone/RADIOtv/blob/main/nagpuri%20logo.png",
+    "tags": "",
+    "codec": "",
+    "bitrate": 0
   }
 }
