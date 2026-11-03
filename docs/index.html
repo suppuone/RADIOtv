@@ -7,10 +7,10 @@
   <meta name="description" content="COOLmagRaTv — internet radio and live television in one simple media center.">
   <title>COOLmagRaTv · Internet Radio & Live TV</title>
   <link rel="preconnect" href="https://de1.api.radio-browser.info">
-  <link rel="stylesheet" href="style.css?v=20261102-hero-remove-favorite-caption">
+  <link rel="stylesheet" href="style.css?v=4.0.0">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/hls.js@1.5.18/dist/hls.min.js"></script>
-  <script defer src="app.js?v=20261102-hero-remove-favorite-caption"></script>
+  <script defer src="app.js?v=4.0.0"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -116,21 +116,22 @@
           <div class="settings-row"><div><b>Local time</b><small>Show the clock in the top bar</small></div><button class="settings-switch" id="settings-time" role="switch" aria-checked="false" aria-label="Show local time"></button></div>
           <div class="settings-row"><div><b>Volume</b><small>Allow radio and TV audio</small></div><button class="settings-switch active" id="settings-volume" role="switch" aria-checked="true" aria-label="Enable audio"></button></div>
         </section>
-        <section class="settings-section update-section"><h3>Application</h3><div class="update-row"><div><b>App updates</b><small id="update-status" role="status" aria-live="polite">Check the latest version on this site.</small></div><button class="update-button" id="check-updates" type="button">Check for updates</button></div><div class="update-row admin-entry-row"><div><b>Shared TV favorites</b><small>Manage the channels shown to everyone.</small></div><button class="update-button" id="admin-open" type="button">Admin</button></div></section>
+        <section class="settings-section update-section"><h3>Application</h3><div class="update-row"><div><b>App updates</b><small id="update-status" role="status" aria-live="polite">Check the latest version on this site.</small></div><button class="update-button" id="check-updates" type="button">Check for updates</button></div><div class="update-row admin-entry-row"><div><b>Shared favorites</b><small>Manage radio stations and TV channels shown to everyone.</small></div><button class="update-button" id="admin-open" type="button">Admin</button></div></section>
         <p class="settings-note">Weather and local time start off; audio starts on at 30% volume.</p>
       </section>
     </div>
 
     <div class="admin-overlay" id="admin-overlay" hidden>
       <section class="admin-dialog" role="dialog" aria-modal="true" aria-labelledby="admin-heading">
-        <header class="settings-header"><div><span class="eyebrow">ADMIN · GITHUB ACCESS</span><h2 id="admin-heading">Shared TV favorites</h2></div><button class="settings-close" id="admin-close" aria-label="Close admin panel">×</button></header>
+        <header class="settings-header"><div><span class="eyebrow">ADMIN · GITHUB ACCESS</span><h2 id="admin-heading">Shared favorites</h2></div><button class="settings-close" id="admin-close" aria-label="Close admin panel">×</button></header>
         <p class="admin-intro">Changes here update the shared favorites for all users. Your GitHub token stays in this browser tab and is never saved.</p>
         <div class="admin-connect-row"><label class="admin-field"><span>GitHub fine-grained token</span><input id="admin-token" type="password" autocomplete="off" placeholder="Paste a token with RADIOtv Contents read/write access"></label><button class="button primary" id="admin-connect" type="button">Connect</button></div>
         <p class="admin-status" id="admin-status" role="status" aria-live="polite">Connect to GitHub to load the shared list.</p>
         <div class="admin-workspace" id="admin-workspace" hidden>
-          <div class="admin-import-row"><div><b>Already saved favorites in this browser?</b><small>Imports TV favorites from this exact site address. Localhost and the hosted site have separate lists.</small></div><button class="button ghost" id="admin-import-local" type="button">Import browser favorites</button></div>
-          <section class="admin-add-card"><h3>Add a shared channel</h3><div class="admin-form-grid"><label class="admin-field"><span>Channel name</span><input id="admin-channel-name" type="text" placeholder="Adventure Earth"></label><label class="admin-field"><span>Stream URL</span><input id="admin-channel-url" type="url" placeholder="https://…m3u8"></label><label class="admin-field"><span>Category</span><input id="admin-channel-group" type="text" placeholder="Documentary"></label><label class="admin-field"><span>Logo URL (optional)</span><input id="admin-channel-logo" type="url" placeholder="https://…"></label></div><button class="button ghost" id="admin-add-channel" type="button">＋ Add channel</button></section>
-          <div class="admin-list-heading"><h3>Shared channels</h3><span id="admin-count">0</span></div>
+          <div class="admin-media-tabs" role="tablist" aria-label="Favorite type"><button class="button ghost active" id="admin-tv-tab" type="button" role="tab" aria-selected="true">TV channels</button><button class="button ghost" id="admin-radio-tab" type="button" role="tab" aria-selected="false">Radio stations</button></div>
+          <div class="admin-import-row"><div><b>Already saved favorites in this browser?</b><small id="admin-import-help">Imports TV favorites from this exact site address. Localhost and the hosted site have separate lists.</small></div><button class="button ghost" id="admin-import-local" type="button">Import browser favorites</button></div>
+          <section class="admin-add-card"><h3 id="admin-add-heading">Add a shared channel</h3><div class="admin-form-grid"><label class="admin-field"><span id="admin-name-label">Channel name</span><input id="admin-channel-name" type="text" placeholder="Adventure Earth"></label><label class="admin-field"><span>Stream URL</span><input id="admin-channel-url" type="url" placeholder="https://…m3u8"></label><label class="admin-field"><span id="admin-group-label">Category</span><input id="admin-channel-group" type="text" placeholder="Documentary"></label><label class="admin-field"><span id="admin-logo-label">Logo URL (optional)</span><input id="admin-channel-logo" type="url" placeholder="https://…"></label></div><button class="button ghost" id="admin-add-channel" type="button">＋ Add channel</button></section>
+          <div class="admin-list-heading"><h3 id="admin-list-title">Shared channels</h3><span id="admin-count">0</span></div>
           <div class="admin-favorite-list" id="admin-favorite-list"></div>
           <footer class="admin-actions"><button class="button ghost" id="admin-disconnect" type="button">Disconnect</button><button class="button primary" id="admin-save" type="button">Publish shared list</button></footer>
         </div>

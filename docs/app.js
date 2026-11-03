@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '20261102.24';
+  const APP_VERSION = '4.0.0';
 
   const RADIO_API = [
     'https://de1.api.radio-browser.info/json',
@@ -91,6 +91,8 @@
   let adminGitHubToken = '';
   let adminSharedFavorites = {};
   let adminFavoritesSha = '';
+  let adminFavoriteType = 'tv';
+  const adminFavoriteDrafts = {tv:null,radio:null};
   const favoriteHistory = [];
   let favoriteHistoryMode = '';
 
@@ -358,7 +360,7 @@
     const titles={home:'Your media, in one place',radio:'World Radio',tv:'Live TV',recent:'Recently played',favorites:'Your favorites',news:'News & magazines'};
     const pageIcons={
       radio:'<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="m6 5 12-3M7 12h.01M7 16h.01m4-4h6m-6 4h6"/></svg>',
-      tv:'<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="m8 22 4-4 4 4M8 10h8"/></svg>'
+      tv:'<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="m8 22 4-4 4 4M8 10h8"/></svg>',
     };
     $('section-title-text').textContent=titles[view]||'COOLmagRaTv';
     $('section-icon').innerHTML=pageIcons[view]||'';
@@ -528,10 +530,12 @@
   $('admin-overlay').addEventListener('click',event=>{if(event.target===$('admin-overlay'))closeAdminFavorites();});
   $('admin-connect').addEventListener('click',connectAdminFavorites);
   $('admin-token').addEventListener('keydown',event=>{if(event.key==='Enter')connectAdminFavorites();});
-  $('admin-import-local').addEventListener('click',importBrowserTVFavorites);
+  $('admin-tv-tab').addEventListener('click',()=>switchAdminFavoriteType('tv'));
+  $('admin-radio-tab').addEventListener('click',()=>switchAdminFavoriteType('radio'));
+  $('admin-import-local').addEventListener('click',importBrowserFavorites);
   $('admin-add-channel').addEventListener('click',addAdminFavorite);
   $('admin-save').addEventListener('click',publishAdminFavorites);
-  $('admin-disconnect').addEventListener('click',()=>{adminGitHubToken='';adminFavoritesSha='';adminSharedFavorites={};$('admin-token').value='';$('admin-workspace').hidden=true;$('admin-status').textContent='Disconnected. Your token has been cleared.';});
+  $('admin-disconnect').addEventListener('click',()=>{adminGitHubToken='';adminFavoritesSha='';adminSharedFavorites={};adminFavoriteDrafts.tv=null;adminFavoriteDrafts.radio=null;$('admin-token').value='';$('admin-workspace').hidden=true;$('admin-status').textContent='Disconnected. Your token has been cleared.';});
   $('settings-weather').addEventListener('click',()=>setUserSetting('weather',!uiSettings.weather));
   $('settings-time').addEventListener('click',()=>setUserSetting('time',!uiSettings.time));
   $('settings-volume').addEventListener('click',()=>setUserSetting('volume',!uiSettings.volume));
@@ -678,75 +682,113 @@
     }
   }
 
-  const ADMIN_FAVORITES_API='https://api.github.com/repos/suppuone/RADIOtv/contents/surak_home_tv_favorites.json';
+  const ADMIN_FAVORITES_API={
+    tv:'https://api.github.com/repos/suppuone/RADIOtv/contents/surak_home_tv_favorites.json',
+    radio:'https://api.github.com/repos/suppuone/RADIOtv/contents/map_favorites.json'
+  };
   function adminHeaders(){return {Authorization:`Bearer ${adminGitHubToken}`,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};}
   function decodeGitHubFile(content){const binary=atob(content.replace(/\s/g,''));return new TextDecoder().decode(Uint8Array.from(binary,char=>char.charCodeAt(0)));}
   function encodeGitHubFile(value){const bytes=new TextEncoder().encode(JSON.stringify(value,null,2));let binary='';for(const byte of bytes)binary+=String.fromCharCode(byte);return btoa(binary);}
+  function captureAdminDraft(){
+    document.querySelectorAll('#admin-favorite-list [data-admin-row]').forEach(row=>{
+      const key=row.dataset.adminRow,item=adminSharedFavorites[key];if(!item)return;
+      item.name=row.querySelector('[data-admin-name]').value.trim()||(adminFavoriteType==='radio'?'Radio station':'TV channel');
+      if(adminFavoriteType==='radio')item.country=row.querySelector('[data-admin-group]').value.trim();
+      else item.group=row.querySelector('[data-admin-group]').value.trim()||'Live TV';
+    });
+    adminFavoriteDrafts[adminFavoriteType]={favorites:adminSharedFavorites,sha:adminFavoritesSha};
+  }
+  function updateAdminFavoriteLabels(){
+    const radio=adminFavoriteType==='radio';
+    $('admin-tv-tab').classList.toggle('active',!radio);$('admin-tv-tab').setAttribute('aria-selected',String(!radio));
+    $('admin-radio-tab').classList.toggle('active',radio);$('admin-radio-tab').setAttribute('aria-selected',String(radio));
+    $('admin-heading').textContent=radio?'Shared Radio Favorites':'Shared TV Favorites';
+    $('admin-add-heading').textContent=radio?'Add a shared radio station':'Add a shared TV channel';
+    $('admin-name-label').textContent=radio?'Station name':'Channel name';
+    $('admin-group-label').textContent=radio?'Country':'Category';
+    $('admin-channel-group').placeholder=radio?'India':'News';
+    $('admin-channel-name').placeholder=radio?'BBC World Service':'Adventure Earth';
+    $('admin-channel-logo').placeholder=radio?'https://… (optional)':'https://…m3u8';
+    $('admin-logo-label').textContent=radio?'Station image URL (optional)':'Logo URL (optional)';
+    $('admin-list-title').textContent=radio?'Shared radio stations':'Shared TV channels';
+    $('admin-import-help').textContent=`Imports ${radio?'radio stations':'TV channels'} saved in this browser. Localhost and the hosted site have separate lists.`;
+  }
   function renderAdminFavorites(){
-    const target=$('admin-favorite-list'),entries=Object.entries(adminSharedFavorites);
+    const target=$('admin-favorite-list'),entries=Object.entries(adminSharedFavorites),radio=adminFavoriteType==='radio';
     $('admin-count').textContent=String(entries.length);
-    if(!entries.length){target.innerHTML='<div class="command-empty">No shared TV favorites yet.</div>';return;}
-    target.innerHTML=entries.map(([url,item])=>`<article class="admin-favorite-row" data-admin-row="${safe(url)}"><label class="admin-field"><span>Channel name</span><input data-admin-name value="${safe(item.name||'TV channel')}"></label><label class="admin-field"><span>Category</span><input data-admin-group value="${safe(item.group||'Live TV')}"></label><button class="admin-remove" data-admin-remove="${safe(url)}" type="button">Remove</button><div class="admin-favorite-url" title="${safe(url)}">${safe(url)}</div></article>`).join('');
+    if(!entries.length){target.innerHTML=`<div class="command-empty">No shared ${radio?'radio stations':'TV channels'} yet.</div>`;return;}
+    target.innerHTML=entries.map(([key,item])=>`<article class="admin-favorite-row" data-admin-row="${safe(key)}"><label class="admin-field"><span>${radio?'Station name':'Channel name'}</span><input data-admin-name value="${safe(item.name||(radio?'Radio station':'TV channel'))}"></label><label class="admin-field"><span>${radio?'Country':'Category'}</span><input data-admin-group value="${safe(radio?(item.country||''):(item.group||'Live TV'))}"></label><button class="admin-remove" data-admin-remove="${safe(key)}" type="button">Remove</button><div class="admin-favorite-url" title="${safe(item.url_resolved||item.url||key)}">${safe(item.url_resolved||item.url||key)}</div></article>`).join('');
     target.querySelectorAll('[data-admin-remove]').forEach(button=>button.addEventListener('click',()=>{delete adminSharedFavorites[button.dataset.adminRemove];renderAdminFavorites();}));
+  }
+  async function loadAdminFavoriteType(type){
+    adminFavoriteType=type;updateAdminFavoriteLabels();
+    const draft=adminFavoriteDrafts[type];
+    if(draft){adminSharedFavorites=draft.favorites;adminFavoritesSha=draft.sha;renderAdminFavorites();$('admin-status').textContent=`Connected · ${Object.keys(adminSharedFavorites).length} shared ${type==='radio'?'radio stations':'TV channels'} loaded.`;return;}
+    if(!adminGitHubToken){$('admin-status').textContent='Connect to GitHub to load this shared list.';return;}
+    adminSharedFavorites={};adminFavoritesSha='';renderAdminFavorites();
+    $('admin-status').textContent=`Loading shared ${type==='radio'?'radio stations':'TV channels'} from GitHub…`;
+    try{
+      const response=await fetch(`${ADMIN_FAVORITES_API[type]}?ref=main`,{headers:adminHeaders(),cache:'no-store'});
+      if(!response.ok)throw new Error(response.status===401||response.status===403?'GitHub rejected the token. Check that it has Contents read/write access to RADIOtv.':`GitHub request failed (${response.status}).`);
+      const file=await response.json(),favorites=JSON.parse(decodeGitHubFile(file.content));
+      if(!favorites||Array.isArray(favorites)||typeof favorites!=='object')throw new Error('The shared favorites file is not a valid list.');
+      adminSharedFavorites=favorites;adminFavoritesSha=file.sha;adminFavoriteDrafts[type]={favorites,sha:file.sha};
+      $('admin-workspace').hidden=false;renderAdminFavorites();
+      $('admin-status').textContent=`Connected · ${Object.keys(favorites).length} shared ${type==='radio'?'radio stations':'TV channels'} loaded.`;
+    }catch(error){$('admin-status').textContent=error.message||'Could not load the shared list.';}
+  }
+  function switchAdminFavoriteType(type){
+    if(type===adminFavoriteType)return;
+    captureAdminDraft();loadAdminFavoriteType(type);
   }
   async function connectAdminFavorites(){
     const button=$('admin-connect'),status=$('admin-status');
     adminGitHubToken=$('admin-token').value.trim();
     if(!adminGitHubToken){status.textContent='Paste your GitHub token to connect.';return;}
+    adminFavoriteDrafts.tv=null;adminFavoriteDrafts.radio=null;adminFavoritesSha='';
     button.disabled=true;button.textContent='Connecting…';status.textContent='Loading shared favorites from GitHub…';
-    try{
-      const response=await fetch(`${ADMIN_FAVORITES_API}?ref=main`,{headers:adminHeaders(),cache:'no-store'});
-      if(!response.ok)throw new Error(response.status===401||response.status===403?'GitHub rejected the token. Check that it has Contents read/write access to RADIOtv.':`GitHub request failed (${response.status}).`);
-      const file=await response.json();
-      adminSharedFavorites=JSON.parse(decodeGitHubFile(file.content));
-      if(!adminSharedFavorites||Array.isArray(adminSharedFavorites)||typeof adminSharedFavorites!=='object')throw new Error('The shared favorites file is not a valid channel list.');
-      adminFavoritesSha=file.sha;$('admin-workspace').hidden=false;renderAdminFavorites();
-      status.textContent=`Connected · ${Object.keys(adminSharedFavorites).length} shared channels loaded.`;
-    }catch(error){adminGitHubToken='';$('admin-token').value='';status.textContent=error.message||'Could not connect to GitHub.';}
+    try{await loadAdminFavoriteType(adminFavoriteType);if(!adminFavoritesSha)throw new Error(status.textContent);}
+    catch(error){adminGitHubToken='';$('admin-token').value='';status.textContent=error.message||'Could not connect to GitHub.';}
     finally{button.disabled=false;button.textContent='Connect';}
   }
-  function importBrowserTVFavorites(){
-    let browserTVFavorites={};
-    try{
-      const parsed=JSON.parse(localStorage.getItem('coolmag.tv.favorites.v1')||'{}');
-      if(parsed&&typeof parsed==='object'&&!Array.isArray(parsed))browserTVFavorites=parsed;
-    }catch{}
-    Object.assign(tvFavorites,browserTVFavorites);
-    const saved=Object.values(browserTVFavorites).filter(station=>station&&station.url);
-    if(!saved.length){$('admin-status').textContent=`No TV favorites were found for ${location.origin}. Favorites saved on localhost and the hosted site are separate.`;return;}
+  function importBrowserFavorites(){
+    const radio=adminFavoriteType==='radio',storageKey=radio?'coolmag.radio.favorites.v1':'coolmag.tv.favorites.v1';
+    let localFavorites={};
+    try{const parsed=JSON.parse(localStorage.getItem(storageKey)||'{}');if(parsed&&typeof parsed==='object'&&!Array.isArray(parsed))localFavorites=parsed;}catch{}
+    const saved=Object.entries(localFavorites).filter(([,station])=>station&&(station.url||station.url_resolved));
+    if(!saved.length){$('admin-status').textContent=`No ${radio?'radio':'TV'} favorites were found for ${location.origin}. Localhost and hosted site lists are separate.`;return;}
     let added=0;
-    saved.forEach(station=>{
-      const exists=Boolean(adminSharedFavorites[station.url]);
-      adminSharedFavorites[station.url]={...(adminSharedFavorites[station.url]||{}),...station,url:station.url};
-      if(!exists)added++;
+    saved.forEach(([key,station])=>{
+      const url=station.url_resolved||station.url;
+      const sharedKey=radio?(station.stationuuid||key||url):url;
+      const normalized=radio?{...station,url,url_resolved:station.url_resolved||url}:{...station,url};
+      const exists=Boolean(adminSharedFavorites[sharedKey]);adminSharedFavorites[sharedKey]={...(adminSharedFavorites[sharedKey]||{}),...normalized};if(!exists)added++;
     });
-    renderAdminFavorites();
-    $('admin-status').textContent=`Imported ${saved.length} browser favorite${saved.length===1?'':'s'} (${added} new). Click “Publish shared list” to send them to GitHub.`;
+    captureAdminDraft();renderAdminFavorites();
+    $('admin-status').textContent=`Imported ${saved.length} browser ${radio?'radio stations':'TV channels'} (${added} new). Publish the shared list to send them to GitHub.`;
   }
   function addAdminFavorite(){
-    const name=$('admin-channel-name').value.trim(),url=$('admin-channel-url').value.trim();
-    if(!name||!url){$('admin-status').textContent='Enter both a channel name and stream URL.';return;}
+    const radio=adminFavoriteType==='radio',name=$('admin-channel-name').value.trim(),url=$('admin-channel-url').value.trim(),extra=$('admin-channel-group').value.trim(),logo=$('admin-channel-logo').value.trim();
+    if(!name||!url){$('admin-status').textContent='Enter both a name and stream URL.';return;}
     if(!/^https?:\/\//i.test(url)){$('admin-status').textContent='The stream URL must begin with http:// or https://.';return;}
-    adminSharedFavorites[url]={name,group:$('admin-channel-group').value.trim()||'Live TV',logo:$('admin-channel-logo').value.trim(),url,options:[]};
+    if(radio){adminSharedFavorites[url]={stationuuid:url,name,url,url_resolved:url,country:extra,favicon:logo,tags:'',codec:'',bitrate:0};}
+    else{adminSharedFavorites[url]={name,group:extra||'Live TV',logo,url,options:[]};}
     $('admin-channel-name').value='';$('admin-channel-url').value='';$('admin-channel-group').value='';$('admin-channel-logo').value='';
-    renderAdminFavorites();$('admin-status').textContent='Channel added. Publish the shared list to make it visible to everyone.';
+    captureAdminDraft();renderAdminFavorites();$('admin-status').textContent=`${radio?'Radio station':'Channel'} added. Publish the shared list to make it visible to everyone.`;
   }
   async function publishAdminFavorites(){
-    const status=$('admin-status'),button=$('admin-save');
+    const status=$('admin-status'),button=$('admin-save'),type=adminFavoriteType;
     if(!adminGitHubToken||!adminFavoritesSha){status.textContent='Connect to GitHub first.';return;}
-    document.querySelectorAll('#admin-favorite-list [data-admin-row]').forEach(row=>{
-      const url=row.dataset.adminRow,item=adminSharedFavorites[url];if(!item)return;
-      item.name=row.querySelector('[data-admin-name]').value.trim()||'TV channel';
-      item.group=row.querySelector('[data-admin-group]').value.trim()||'Live TV';
-    });
-    button.disabled=true;button.textContent='Publishing…';status.textContent='Publishing shared favorites to GitHub…';
+    captureAdminDraft();button.disabled=true;button.textContent='Publishing…';status.textContent=`Publishing shared ${type==='radio'?'radio stations':'TV channels'} to GitHub…`;
     try{
-      const response=await fetch(ADMIN_FAVORITES_API,{method:'PUT',headers:{...adminHeaders(),'Content-Type':'application/json'},body:JSON.stringify({message:'Update shared TV favorites from CoolMagRaTv admin',content:encodeGitHubFile(adminSharedFavorites),sha:adminFavoritesSha,branch:'main'})});
+      const response=await fetch(ADMIN_FAVORITES_API[type],{method:'PUT',headers:{...adminHeaders(),'Content-Type':'application/json'},body:JSON.stringify({message:`Update shared ${type==='radio'?'radio':'TV'} favorites from CoolMagRaTv admin`,content:encodeGitHubFile(adminSharedFavorites),sha:adminFavoritesSha,branch:'main'})});
       const result=await response.json();
       if(!response.ok)throw new Error(response.status===409||response.status===422?'The GitHub file changed since you connected. Disconnect and reconnect to load the latest list, then try again.':result.message||`Publish failed (${response.status}).`);
-      adminFavoritesSha=result.content.sha;
-      Object.assign(tvFavorites,adminSharedFavorites);persist('coolmag.tv.favorites.v1',tvFavorites);updateFavoriteCounts();renderFavorites();renderTV();
-      status.textContent=`Published ${Object.keys(adminSharedFavorites).length} shared channels. Users will get the list when they refresh.`;
+      adminFavoritesSha=result.content.sha;adminFavoriteDrafts[type]={favorites:adminSharedFavorites,sha:adminFavoritesSha};
+      if(type==='radio'){Object.assign(radioFavorites,adminSharedFavorites);persist('coolmag.radio.favorites.v1',radioFavorites);renderRadio();renderHomeRadio();}
+      else{Object.assign(tvFavorites,adminSharedFavorites);persist('coolmag.tv.favorites.v1',tvFavorites);renderTV();renderHomeTV();}
+      updateFavoriteCounts();renderFavorites();
+      status.textContent=`Published ${Object.keys(adminSharedFavorites).length} shared ${type==='radio'?'radio stations':'TV channels'}. Users get the list when they refresh.`;
     }catch(error){status.textContent=error.message||'Could not publish the shared list.';}
     finally{button.disabled=false;button.textContent='Publish shared list';}
   }
