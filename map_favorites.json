@@ -1659,5 +1659,16 @@
     "tags": "",
     "codec": "",
     "bitrate": 0
+  },
+  "https://stream.zeno.fm/fdgs82xkzhhvv": {
+    "stationuuid": "https://stream.zeno.fm/fdgs82xkzhhvv",
+    "name": "COOL RETRO 90s",
+    "url": "https://stream.zeno.fm/fdgs82xkzhhvv",
+    "url_resolved": "https://stream.zeno.fm/fdgs82xkzhhvv",
+    "country": "INDIA",
+    "favicon": "https://www.google.com/imgres?q=FREE%20logo%20&imgurl=https%3A%2F%2Fimg.magnific.com%2Ffree-vector%2Fbird-colorful-gradient-design-vector_343694-2506.jpg%3Fsemt%3Dais_hybrid%26w%3D740%26q%3D80&imgrefurl=https%3A%2F%2Fwww.magnific.com%2Ffree-photos-vectors%2Ffree-logo-design&docid=GVexJoSCbs9DPM&tbnid=I7jyMNpJv6u1aM&vet=12ahUKEwj1vrjp0-uXAxWIkeEIHUSTA2YQnPAOegUI9QEQAA..i&w=740&h=740&hcb=2&ved=2ahUKEwj1vrjp0-uXAxWIkeEIHUSTA2YQnPAOegUI9QEQAA",
+    "tags": "",
+    "codec": "",
+    "bitrate": 0
   }
 }
