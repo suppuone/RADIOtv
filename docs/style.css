@@ -342,6 +342,7 @@ body.live-count-enabled #home-view .bento-weather{grid-column:span 4}
 .admin-list-heading h3{margin:0}
 .admin-list-heading span{color:var(--muted,#8a99a5);font-size:12px}
 .admin-favorite-list{display:grid;gap:8px;max-height:260px;overflow:auto}
+.admin-list-search{margin:0 0 9px}.admin-favorite-row[hidden]{display:none!important}
 .admin-favorite-row{display:grid;grid-template-columns:minmax(120px,1fr) minmax(100px,.65fr) minmax(180px,1.25fr) auto;align-items:center;gap:9px;padding:9px;border:1px solid var(--line,#2b3842);border-radius:10px;background:rgba(0,0,0,.14)}
 .admin-favorite-row .admin-field input{height:35px}
 .admin-favorite-url{grid-column:1/4;overflow:hidden;color:var(--muted,#8a99a5);font-size:10px;text-overflow:ellipsis;white-space:nowrap}

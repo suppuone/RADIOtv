@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '4.0.9';
+  const APP_VERSION = '4.1.0';
 
   const RADIO_API = [
     'https://de1.api.radio-browser.info/json',
@@ -595,6 +595,7 @@
   $('admin-token').addEventListener('keydown',event=>{if(event.key==='Enter')connectAdminFavorites();});
   $('admin-tv-tab').addEventListener('click',()=>switchAdminFavoriteType('tv'));
   $('admin-radio-tab').addEventListener('click',()=>switchAdminFavoriteType('radio'));
+  $('admin-list-search').addEventListener('input',filterAdminFavoriteList);
   $('admin-import-local').addEventListener('click',importBrowserFavorites);
   $('admin-add-channel').addEventListener('click',addAdminFavorite);
   $('admin-save').addEventListener('click',publishAdminFavorites);
@@ -781,15 +782,22 @@
     $('admin-channel-logo').placeholder=radio?'https://… (optional)':'https://…m3u8';
     $('admin-logo-label').textContent=radio?'Station image URL (optional)':'Logo URL (optional)';
     $('admin-list-title').textContent=radio?'Shared radio stations · stream and logo URLs':'Shared TV channels';
+    $('admin-list-search').placeholder=radio?'Search all radio stations by name, tag, country, or URL…':'Search all TV channels by name, category, country, or URL…';
     $('admin-import-help').textContent=`Imports ${radio?'radio stations':'TV channels'} saved in this browser. Localhost and the hosted site have separate lists.`;
+  }
+  function filterAdminFavoriteList(){
+    const target=$('admin-favorite-list'),term=$('admin-list-search').value.trim().toLocaleLowerCase(),rows=[...target.querySelectorAll('[data-admin-row]')];let visible=0;
+    rows.forEach(row=>{const fields=[row.dataset.adminSearch,...[...row.querySelectorAll('input')].map(input=>input.value)].join(' ').toLocaleLowerCase();const match=!term||fields.includes(term);row.hidden=!match;if(match)visible++;});
+    $('admin-count').textContent=term?`${visible} / ${rows.length}`:String(rows.length);
   }
   function renderAdminFavorites(){
     const target=$('admin-favorite-list'),entries=Object.entries(adminSharedFavorites).sort(([,a],[,b])=>String(a?.name||'').localeCompare(String(b?.name||''),undefined,{sensitivity:'base'})),radio=adminFavoriteType==='radio';
     $('admin-count').textContent=String(entries.length);
     if(!entries.length){target.innerHTML=`<div class="command-empty">No shared ${radio?'radio stations':'TV channels'} yet.</div>`;return;}
-    target.innerHTML=entries.map(([key,item])=>{const logo=item.favicon||item.logo||item.image||item.artwork||'';return radio?`<article class="admin-favorite-row radio-admin-row" data-admin-row="${safe(key)}"><label class="admin-field"><span>Station name</span><input data-admin-name value="${safe(item.name||'Radio station')}"></label><label class="admin-field"><span>Country</span><input data-admin-group value="${safe(item.country||'')}"></label><label class="admin-field"><span>Stream URL</span><input data-admin-stream type="url" value="${safe(item.url_resolved||item.url||'')}" placeholder="https://…"></label><label class="admin-field"><span>Logo URL</span><input data-admin-logo type="url" value="${safe(logo)}" placeholder="https://…"></label><button class="admin-remove" data-admin-remove="${safe(key)}" type="button">Remove</button></article>`:`<article class="admin-favorite-row" data-admin-row="${safe(key)}"><label class="admin-field"><span>Channel name</span><input data-admin-name value="${safe(item.name||'TV channel')}"></label><label class="admin-field"><span>Category</span><input data-admin-group value="${safe(item.group||'Live TV')}"></label><label class="admin-field"><span>Logo image URL</span><input data-admin-logo type="url" value="${safe(logo)}" placeholder="https://…"></label><button class="admin-remove" data-admin-remove="${safe(key)}" type="button">Remove</button><div class="admin-favorite-url" title="${safe(item.url_resolved||item.url||key)}">${safe(item.url_resolved||item.url||key)}</div></article>`;}).join('');
+    target.innerHTML=entries.map(([key,item])=>{const logo=item.favicon||item.logo||item.image||item.artwork||'',search=[key,item.name,item.country,item.group,item.tags,item.url,item.url_resolved,logo].filter(Boolean).join(' ');return radio?`<article class="admin-favorite-row radio-admin-row" data-admin-row="${safe(key)}" data-admin-search="${safe(search)}"><label class="admin-field"><span>Station name</span><input data-admin-name value="${safe(item.name||'Radio station')}"></label><label class="admin-field"><span>Country</span><input data-admin-group value="${safe(item.country||'')}"></label><label class="admin-field"><span>Stream URL</span><input data-admin-stream type="url" value="${safe(item.url_resolved||item.url||'')}" placeholder="https://…"></label><label class="admin-field"><span>Logo URL</span><input data-admin-logo type="url" value="${safe(logo)}" placeholder="https://…"></label><button class="admin-remove" data-admin-remove="${safe(key)}" type="button">Remove</button></article>`:`<article class="admin-favorite-row" data-admin-row="${safe(key)}" data-admin-search="${safe(search)}"><label class="admin-field"><span>Channel name</span><input data-admin-name value="${safe(item.name||'TV channel')}"></label><label class="admin-field"><span>Category</span><input data-admin-group value="${safe(item.group||'Live TV')}"></label><label class="admin-field"><span>Logo image URL</span><input data-admin-logo type="url" value="${safe(logo)}" placeholder="https://…"></label><button class="admin-remove" data-admin-remove="${safe(key)}" type="button">Remove</button><div class="admin-favorite-url" title="${safe(item.url_resolved||item.url||key)}">${safe(item.url_resolved||item.url||key)}</div></article>`;}).join('');
     target.querySelectorAll('.admin-favorite-row input').forEach(input=>input.addEventListener('input',captureAdminDraft));
     target.querySelectorAll('[data-admin-remove]').forEach(button=>button.addEventListener('click',()=>{delete adminSharedFavorites[button.dataset.adminRemove];renderAdminFavorites();}));
+    filterAdminFavoriteList();
   }
   async function loadAdminFavoriteType(type){
     adminFavoriteType=type;updateAdminFavoriteLabels();
@@ -810,7 +818,7 @@
   }
   function switchAdminFavoriteType(type){
     if(type===adminFavoriteType)return;
-    captureAdminDraft();loadAdminFavoriteType(type);
+    captureAdminDraft();$('admin-list-search').value='';loadAdminFavoriteType(type);
   }
   async function connectAdminFavorites(){
     const button=$('admin-connect'),status=$('admin-status');

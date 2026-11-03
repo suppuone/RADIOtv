@@ -7,10 +7,10 @@
   <meta name="description" content="COOLmagRaTv — internet radio and live television in one simple media center.">
   <title>COOLmagRaTv · Internet Radio & Live TV</title>
   <link rel="preconnect" href="https://de1.api.radio-browser.info">
-  <link rel="stylesheet" href="style.css?v=4.0.8">
+  <link rel="stylesheet" href="style.css?v=4.1.0">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/hls.js@1.5.18/dist/hls.min.js"></script>
-  <script defer src="app.js?v=4.0.9"></script>
+  <script defer src="app.js?v=4.1.0"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -134,6 +134,7 @@
           <div class="admin-import-row"><div><b>Already saved favorites in this browser?</b><small id="admin-import-help">Imports TV favorites from this exact site address. Localhost and the hosted site have separate lists.</small></div><button class="button ghost" id="admin-import-local" type="button">Import browser favorites</button></div>
           <section class="admin-add-card"><h3 id="admin-add-heading">Add a shared channel</h3><div class="admin-form-grid"><label class="admin-field"><span id="admin-name-label">Channel name</span><input id="admin-channel-name" type="text" placeholder="Adventure Earth"></label><label class="admin-field"><span>Stream URL</span><input id="admin-channel-url" type="url" placeholder="https://…m3u8"></label><label class="admin-field"><span id="admin-group-label">Category</span><input id="admin-channel-group" type="text" placeholder="Documentary"></label><label class="admin-field"><span id="admin-logo-label">Logo URL (optional)</span><input id="admin-channel-logo" type="url" placeholder="https://…"></label></div><button class="button ghost" id="admin-add-channel" type="button">＋ Add channel</button></section>
           <div class="admin-list-heading"><h3 id="admin-list-title">Shared channels</h3><span id="admin-count">0</span></div>
+          <label class="admin-field admin-list-search"><span>Find a station or channel by name, tag, country, or URL</span><input id="admin-list-search" type="search" placeholder="Search the complete shared list…" autocomplete="off"></label>
           <div class="admin-favorite-list" id="admin-favorite-list"></div>
           <footer class="admin-actions"><button class="button ghost" id="admin-disconnect" type="button">Disconnect</button><button class="button primary" id="admin-save" type="button">Publish shared list</button></footer>
         </div>
