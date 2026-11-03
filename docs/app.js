@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '4.0.2';
+  const APP_VERSION = '4.0.3';
 
   const RADIO_API = [
     'https://de1.api.radio-browser.info/json',
