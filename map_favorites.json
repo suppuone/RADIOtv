@@ -319,7 +319,7 @@
     "url": "https://vpmurugun.radioca.st/stream",
     "url_resolved": "https://vpmurugun.radioca.st/stream",
     "homepage": "https://www.radioparamankurichi.in/",
-    "favicon": "https://onlineradiofm.in/assets/image/radio/180/Radio%20Main%20Image.jpg",
+    "favicon": "",
     "tags": "",
     "country": "India",
     "countrycode": "IN",
@@ -553,7 +553,7 @@
     "url": "https://radio-broadcast.ekantipur.com/stream",
     "url_resolved": "https://radio-broadcast.ekantipur.com/stream",
     "homepage": "https://radiokantipur.com/",
-    "favicon": "https://cdn-radiotime-logos.tunein.com/s8654d.png",
+    "favicon": "",
     "tags": "kantipur,kathmandu,nepal,nepali",
     "country": "Nepal",
     "countrycode": "NP",
@@ -592,7 +592,7 @@
     "url": "https://streaming.softnep.net:10994/;stream.nsv",
     "url_resolved": "https://streaming.softnep.net:10994/;stream.nsv",
     "homepage": "https://www.butwaldiary.com/",
-    "favicon": "https://cdn-radiotime-logos.tunein.com/s48020d.png",
+    "favicon": "",
     "tags": "",
     "country": "Nepal",
     "countrycode": "NP",
@@ -631,7 +631,7 @@
     "url": "https://www.hamropatro.com/api/radio/stream/34",
     "url_resolved": "https://www.hamropatro.com/api/radio/stream/34",
     "homepage": "",
-    "favicon": "https://cdn-radiotime-logos.tunein.com/s180463d.png",
+    "favicon": "",
     "tags": "",
     "country": "Nepal",
     "countrycode": "NP",
@@ -670,7 +670,7 @@
     "url": "https://www.hamropatro.com/api/radio/stream/82",
     "url_resolved": "https://www.hamropatro.com/api/radio/stream/82",
     "homepage": "",
-    "favicon": "https://cdn-radiotime-logos.tunein.com/s108126d.png",
+    "favicon": "",
     "tags": "",
     "country": "Nepal",
     "countrycode": "NP",
@@ -748,7 +748,7 @@
     "url": "https://radiohits882.radioca.st/;",
     "url_resolved": "https://radiohits882.radioca.st/;",
     "homepage": "http://radiohits882.com/",
-    "favicon": "https://streema.com/_ipx/f_avif,webp&q_80&s_80x80/https://static-media.streema.com/media/cache/07/17/0717fc87faf0bf7cc5dd66515f924839.png",
+    "favicon": "",
     "tags": "arabic music",
     "country": "Egypt",
     "countrycode": "EG",
@@ -787,7 +787,7 @@
     "url": "https://n06.rcs.revma.com/1ut6qwtbv4uvv",
     "url_resolved": "https://n06.rcs.revma.com/1ut6qwtbv4uvv",
     "homepage": "https://raaga.syok.my/",
-    "favicon": "https://onlineradiofm.in/assets/image/radio/180/tHraaga-.png",
+    "favicon": "",
     "tags": "",
     "country": "Malaysia",
     "countrycode": "MY",
@@ -826,7 +826,7 @@
     "url": "https://usa3.fastcast4u.com/proxy/jeifm?mp=/1",
     "url_resolved": "https://usa3.fastcast4u.com/proxy/jeifm?mp=/1",
     "homepage": "http://www.jeifm.com/",
-    "favicon": "https://streema.com/_ipx/f_avif,webp&q_80&s_80x80/https://static-media.streema.com/media/cache/48/72/48729c7f9caa5ea83967a9bf51baf8ff.jpg",
+    "favicon": "",
     "tags": "klang,kollywood,malaysia,panpalai,south indian,tamil,tamil music,tamil radio",
     "country": "Malaysia",
     "countrycode": "MY",
@@ -982,7 +982,7 @@
     "url": "http://s2.voscast.com:12084/;stream1619441439791/1",
     "url_resolved": "http://s2.voscast.com:12084/;stream1619441439791/1",
     "homepage": "https://tubetamil.fm/",
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSORJD2TyeIukmCooUb1bpmUnAJWhj_mYWFeXIAhcIbA&s",
+    "favicon": "",
     "tags": "indian music,jaffna,radio,south indian,sri lanka,tamil,tamil fm,tamil music,tamil songs,tube tamil",
     "country": "Sri Lanka",
     "countrycode": "LK",
@@ -1099,7 +1099,7 @@
     "url": "https://r.bgp.rodeo/listen/outlaw/radio.mp3",
     "url_resolved": "https://r.bgp.rodeo/listen/outlaw/radio.mp3",
     "homepage": "https://r.bgp.rodeo/public/outlaw",
-    "favicon": "https://play-lh.googleusercontent.com/2Db0RTyPTVxecUEFQGXRruG6XPYfqsUnRzI0Fgq3cJWVNv5A3Y6sUxI7S4wDStlFd5Qta2J2p2BEzu87HhhDPw=w240-h480-rw",
+    "favicon": "",
     "tags": "alt-country,americana,country,country rock,honky tonk,outlaw country,red dirt,southern rock,texas country",
     "country": "The United States Of America",
     "countrycode": "US",
@@ -1134,7 +1134,7 @@
     "changeuuid": "77227da7-5631-452d-a0e9-a256bbc04a5e",
     "stationuuid": "a85a37b9-8a09-42d1-ad65-e8569a0bc0c0",
     "serveruuid": null,
-    "name": "Classic Country Legends Radio",
+    "name": "Classic Country Legends Radio ",
     "url": "http://puma.streemlion.com:3540/stream",
     "url_resolved": "http://puma.streemlion.com:3540/stream",
     "homepage": "https://the-ranch.yolasite.com/",
@@ -1217,8 +1217,7 @@
     "tags": "Added by you",
     "codec": "",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwVG4cz_mqLDKZH7Sc9PURuGBQoy0w1CHaj3I_CP70UA&s"
+    "clickcount": 0
   },
   "e928bf7b-7de2-4447-87ec-369d1be1b9f5": {
     "changeuuid": "18f6e510-58f2-4e63-b86f-5475de16f8ab",
@@ -1267,7 +1266,7 @@
     "url": "http://stream.zeno.fm/8ty8szwpwfeuv.m3u",
     "url_resolved": "http://stream.zeno.fm/8ty8szwpwfeuv",
     "homepage": "http://www.hitsofbollywood.com/",
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzydudJYnU6d45QWJ_Tfv3rTLdQCWW6xHdJuGHbB963Q&s",
+    "favicon": "",
     "tags": "bollywood,desi,hindi,india",
     "country": "India",
     "countrycode": "IN",
@@ -1307,8 +1306,7 @@
     "tags": "ANDAMAN NICOBAR, Hindi, English, Nicobarese",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://upload.wikimedia.org/wikipedia/hi/a/aa/AIR_Logo.jpg?utm_source=hi.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled&_=20130106183502"
+    "clickcount": 0
   },
   "akashvani:240": {
     "stationuuid": "akashvani:240",
@@ -1319,8 +1317,7 @@
     "tags": "SIKKIM, Nepali, Hindi",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://upload.wikimedia.org/wikipedia/hi/a/aa/AIR_Logo.jpg?utm_source=hi.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled&_=20130106183502"
+    "clickcount": 0
   },
   "akashvani:293": {
     "stationuuid": "akashvani:293",
@@ -1331,8 +1328,7 @@
     "tags": "WEST BENGAL, Bengali",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://upload.wikimedia.org/wikipedia/hi/a/aa/AIR_Logo.jpg?utm_source=hi.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled&_=20130106183502"
+    "clickcount": 0
   },
   "akashvani:241": {
     "stationuuid": "akashvani:241",
@@ -1343,8 +1339,7 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwVG4cz_mqLDKZH7Sc9PURuGBQoy0w1CHaj3I_CP70UA&s"
+    "clickcount": 0
   },
   "akashvani:297": {
     "stationuuid": "akashvani:297",
@@ -1355,8 +1350,7 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://upload.wikimedia.org/wikipedia/hi/a/aa/AIR_Logo.jpg?utm_source=hi.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled&_=20130106183502"
+    "clickcount": 0
   },
   "akashvani:242": {
     "stationuuid": "akashvani:242",
@@ -1367,8 +1361,7 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://upload.wikimedia.org/wikipedia/hi/a/aa/AIR_Logo.jpg?utm_source=hi.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled&_=20130106183502"
+    "clickcount": 0
   },
   "akashvani:243": {
     "stationuuid": "akashvani:243",
@@ -1379,8 +1372,7 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://upload.wikimedia.org/wikipedia/hi/a/aa/AIR_Logo.jpg?utm_source=hi.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled&_=20130106183502"
+    "clickcount": 0
   },
   "akashvani:244": {
     "stationuuid": "akashvani:244",
@@ -1391,8 +1383,7 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTeK7aVfMf-HN9GDY3e9iKS5ycY1Tp_5D6dW0dDRxS1LA&s"
+    "clickcount": 0
   },
   "akashvani:246": {
     "stationuuid": "akashvani:246",
@@ -1403,8 +1394,7 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://upload.wikimedia.org/wikipedia/hi/a/aa/AIR_Logo.jpg?utm_source=hi.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled&_=20130106183502"
+    "clickcount": 0
   },
   "akashvani:305": {
     "stationuuid": "akashvani:305",
@@ -1415,8 +1405,7 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://upload.wikimedia.org/wikipedia/hi/a/aa/AIR_Logo.jpg?utm_source=hi.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled&_=20130106183502"
+    "clickcount": 0
   },
   "akashvani:249": {
     "stationuuid": "akashvani:249",
@@ -1427,8 +1416,7 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://upload.wikimedia.org/wikipedia/hi/a/aa/AIR_Logo.jpg?utm_source=hi.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled&_=20130106183502"
+    "clickcount": 0
   },
   "akashvani:252": {
     "stationuuid": "akashvani:252",
@@ -1439,8 +1427,7 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://upload.wikimedia.org/wikipedia/hi/a/aa/AIR_Logo.jpg?utm_source=hi.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled&_=20130106183502"
+    "clickcount": 0
   },
   "akashvani:251": {
     "stationuuid": "akashvani:251",
@@ -1451,8 +1438,7 @@
     "tags": "TAMIL NADU, Tamil, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://upload.wikimedia.org/wikipedia/hi/a/aa/AIR_Logo.jpg?utm_source=hi.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled&_=20130106183502"
+    "clickcount": 0
   },
   "akashvani:5": {
     "stationuuid": "akashvani:5",
@@ -1463,8 +1449,7 @@
     "tags": "NATIONAL, Hindi, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTA2S-p6xGQ1H9pWG9CIziHnsTplvqQjUA7wjQoZlQFEA&s=10"
+    "clickcount": 0
   },
   "akashvani:1": {
     "stationuuid": "akashvani:1",
@@ -1475,8 +1460,7 @@
     "tags": "NATIONAL, Hindi",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://upload.wikimedia.org/wikipedia/hi/a/aa/AIR_Logo.jpg?utm_source=hi.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled&_=20130106183502"
+    "clickcount": 0
   },
   "akashvani:4": {
     "stationuuid": "akashvani:4",
@@ -1487,8 +1471,7 @@
     "tags": "NATIONAL, Hindi, Tamil, Telugu, Malayalam",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://upload.wikimedia.org/wikipedia/hi/a/aa/AIR_Logo.jpg?utm_source=hi.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled&_=20130106183502"
+    "clickcount": 0
   },
   "akashvani:2": {
     "stationuuid": "akashvani:2",
@@ -1499,8 +1482,7 @@
     "tags": "DELHI, Hindi",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwVG4cz_mqLDKZH7Sc9PURuGBQoy0w1CHaj3I_CP70UA&s"
+    "clickcount": 0
   },
   "akashvani:3": {
     "stationuuid": "akashvani:3",
@@ -1511,8 +1493,7 @@
     "tags": "DELHI, Hindi",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTeK7aVfMf-HN9GDY3e9iKS5ycY1Tp_5D6dW0dDRxS1LA&s"
+    "clickcount": 0
   },
   "akashvani:40": {
     "stationuuid": "akashvani:40",
@@ -1523,8 +1504,7 @@
     "tags": "DELHI, Hindi",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwVG4cz_mqLDKZH7Sc9PURuGBQoy0w1CHaj3I_CP70UA&s"
+    "clickcount": 0
   },
   "akashvani:41": {
     "stationuuid": "akashvani:41",
@@ -1535,8 +1515,7 @@
     "tags": "DELHI, Hindi",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwVG4cz_mqLDKZH7Sc9PURuGBQoy0w1CHaj3I_CP70UA&s"
+    "clickcount": 0
   },
   "akashvani:286": {
     "stationuuid": "akashvani:286",
@@ -1547,8 +1526,7 @@
     "tags": "WEST BENGAL, Bengali, Hindi, English",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwVG4cz_mqLDKZH7Sc9PURuGBQoy0w1CHaj3I_CP70UA&s"
+    "clickcount": 0
   },
   "mediacorp:OLI968FMAAC": {
     "stationuuid": "mediacorp:OLI968FMAAC",
@@ -1559,8 +1537,7 @@
     "tags": "Tamil · News and entertainment",
     "codec": "AAC",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmSPoY8R7tCNpLSanfyNapm2hzPQ4ueztBfE1jVsneLw&s=10"
+    "clickcount": 0
   },
   "mediacorp:INDIEGO_S01AAC_48": {
     "stationuuid": "mediacorp:INDIEGO_S01AAC_48",
@@ -1571,8 +1548,7 @@
     "tags": "English · Indie · Digital",
     "codec": "AAC",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTI1O-u8M0AQFz_fl_Q0dDVs2mI_u5o01MOwpWcE_sreA&s=10"
+    "clickcount": 0
   },
   "mediacorp:SYMPHONY924AAC": {
     "stationuuid": "mediacorp:SYMPHONY924AAC",
@@ -1583,8 +1559,7 @@
     "tags": "English · Classical",
     "codec": "AAC",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwTlWntffdh63JFrnIsDsVbfRgyEQitpfcLic7mHmn_Q&s=10"
+    "clickcount": 0
   },
   "mediacorp:938NOWAAC": {
     "stationuuid": "mediacorp:938NOWAAC",
@@ -1595,8 +1570,7 @@
     "tags": "English · News and talk",
     "codec": "AAC",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9d6Th1KxD261hExeICumxOYX-aYiZ7vYs7lES21QKJQ&s=10"
+    "clickcount": 0
   },
   "mediacorp:987FMAAC": {
     "stationuuid": "mediacorp:987FMAAC",
@@ -1607,8 +1581,7 @@
     "tags": "English · Pop",
     "codec": "AAC",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQw5vCVxMWrobMK8cHB_V9cSP1SSRiPPGh0FQFdConbeQ&s=10"
+    "clickcount": 0
   },
   "mediacorp:GOLD905AAC": {
     "stationuuid": "mediacorp:GOLD905AAC",
@@ -1619,8 +1592,7 @@
     "tags": "English · Classic hits",
     "codec": "AAC",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://www.google.com/imgres?q=GOLD%20905%20SINGAPORE&imgurl=https%3A%2F%2Fcdn-profiles.tunein.com%2Fs7796%2Fimages%2Flogog.jpg%3Ft%3D154031&imgrefurl=https%3A%2F%2Ftunein.com%2Fgold905%2F&docid=Dcyo8hM51VFiVM&tbnid=kT7fJ5tjWYiN8M&vet=12ahUKEwjxqOHjjeyXAxWKkeEIHXlhD6oQnPAOegQITRAA..i&w=600&h=600&hcb=2&ved=2ahUKEwjxqOHjjeyXAxWKkeEIHXlhD6oQnPAOegQITRAA"
+    "clickcount": 0
   },
   "mediacorp:CLASS95AAC": {
     "stationuuid": "mediacorp:CLASS95AAC",
@@ -1631,8 +1603,7 @@
     "tags": "English · Pop",
     "codec": "AAC",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUB-1KbiwuZBbans-jyJqwEKMOght0xxUuGaSWYMlO_Q&s"
+    "clickcount": 0
   },
   "bbc:bbc_world_service": {
     "stationuuid": "bbc:bbc_world_service",
@@ -1643,8 +1614,7 @@
     "tags": "World news",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTFbiBvi7StBo3YCzghi7Eoy2woYZiYnnCXFDHQyXW6LA&s=10"
+    "clickcount": 0
   },
   "bbc:bbc_radio_five_live": {
     "stationuuid": "bbc:bbc_radio_five_live",
@@ -1655,8 +1625,7 @@
     "tags": "News and sport",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTFbiBvi7StBo3YCzghi7Eoy2woYZiYnnCXFDHQyXW6LA&s=10"
+    "clickcount": 0
   },
   "bbc:bbc_radio_fourfm": {
     "stationuuid": "bbc:bbc_radio_fourfm",
@@ -1667,7 +1636,6 @@
     "tags": "News and speech",
     "codec": "HLS",
     "bitrate": 0,
-    "clickcount": 0,
-    "favicon": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTFbiBvi7StBo3YCzghi7Eoy2woYZiYnnCXFDHQyXW6LA&s=10"
+    "clickcount": 0
   }
 }

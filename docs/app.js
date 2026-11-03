@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '4.0.7';
+  const APP_VERSION = '4.0.8';
 
   const RADIO_API = [
     'https://de1.api.radio-browser.info/json',
@@ -740,7 +740,11 @@
     document.querySelectorAll('#admin-favorite-list [data-admin-row]').forEach(row=>{
       const key=row.dataset.adminRow,item=adminSharedFavorites[key];if(!item)return;
       item.name=row.querySelector('[data-admin-name]').value.trim()||(adminFavoriteType==='radio'?'Radio station':'TV channel');
-      if(adminFavoriteType==='radio')item.country=row.querySelector('[data-admin-group]').value.trim();
+      if(adminFavoriteType==='radio'){
+        item.country=row.querySelector('[data-admin-group]').value.trim();
+        const stream=row.querySelector('[data-admin-stream]')?.value.trim();
+        if(stream){item.url=stream;item.url_resolved=stream;}
+      }
       else item.group=row.querySelector('[data-admin-group]').value.trim()||'Live TV';
       const logo=row.querySelector('[data-admin-logo]').value.trim();
       if(adminFavoriteType==='radio')item.favicon=logo;
@@ -760,14 +764,15 @@
     $('admin-channel-name').placeholder=radio?'BBC World Service':'Adventure Earth';
     $('admin-channel-logo').placeholder=radio?'https://… (optional)':'https://…m3u8';
     $('admin-logo-label').textContent=radio?'Station image URL (optional)':'Logo URL (optional)';
-    $('admin-list-title').textContent=radio?'Shared radio stations':'Shared TV channels';
+    $('admin-list-title').textContent=radio?'Shared radio stations · stream and logo URLs':'Shared TV channels';
     $('admin-import-help').textContent=`Imports ${radio?'radio stations':'TV channels'} saved in this browser. Localhost and the hosted site have separate lists.`;
   }
   function renderAdminFavorites(){
-    const target=$('admin-favorite-list'),entries=Object.entries(adminSharedFavorites),radio=adminFavoriteType==='radio';
+    const target=$('admin-favorite-list'),entries=Object.entries(adminSharedFavorites).sort(([,a],[,b])=>String(a?.name||'').localeCompare(String(b?.name||''),undefined,{sensitivity:'base'})),radio=adminFavoriteType==='radio';
     $('admin-count').textContent=String(entries.length);
     if(!entries.length){target.innerHTML=`<div class="command-empty">No shared ${radio?'radio stations':'TV channels'} yet.</div>`;return;}
-    target.innerHTML=entries.map(([key,item])=>{const logo=item.favicon||item.logo||item.image||item.artwork||'';return `<article class="admin-favorite-row" data-admin-row="${safe(key)}"><label class="admin-field"><span>${radio?'Station name':'Channel name'}</span><input data-admin-name value="${safe(item.name||(radio?'Radio station':'TV channel'))}"></label><label class="admin-field"><span>${radio?'Country':'Category'}</span><input data-admin-group value="${safe(radio?(item.country||''):(item.group||'Live TV'))}"></label><label class="admin-field"><span>Logo image URL</span><input data-admin-logo type="url" value="${safe(logo)}" placeholder="https://…"></label><button class="admin-remove" data-admin-remove="${safe(key)}" type="button">Remove</button><div class="admin-favorite-url" title="${safe(item.url_resolved||item.url||key)}">${safe(item.url_resolved||item.url||key)}</div></article>`;}).join('');
+    target.innerHTML=entries.map(([key,item])=>{const logo=item.favicon||item.logo||item.image||item.artwork||'';return radio?`<article class="admin-favorite-row radio-admin-row" data-admin-row="${safe(key)}"><label class="admin-field"><span>Station name</span><input data-admin-name value="${safe(item.name||'Radio station')}"></label><label class="admin-field"><span>Country</span><input data-admin-group value="${safe(item.country||'')}"></label><label class="admin-field"><span>Stream URL</span><input data-admin-stream type="url" value="${safe(item.url_resolved||item.url||'')}" placeholder="https://…"></label><label class="admin-field"><span>Logo URL</span><input data-admin-logo type="url" value="${safe(logo)}" placeholder="https://…"></label><button class="admin-remove" data-admin-remove="${safe(key)}" type="button">Remove</button></article>`:`<article class="admin-favorite-row" data-admin-row="${safe(key)}"><label class="admin-field"><span>Channel name</span><input data-admin-name value="${safe(item.name||'TV channel')}"></label><label class="admin-field"><span>Category</span><input data-admin-group value="${safe(item.group||'Live TV')}"></label><label class="admin-field"><span>Logo image URL</span><input data-admin-logo type="url" value="${safe(logo)}" placeholder="https://…"></label><button class="admin-remove" data-admin-remove="${safe(key)}" type="button">Remove</button><div class="admin-favorite-url" title="${safe(item.url_resolved||item.url||key)}">${safe(item.url_resolved||item.url||key)}</div></article>`;}).join('');
+    target.querySelectorAll('.admin-favorite-row input').forEach(input=>input.addEventListener('input',captureAdminDraft));
     target.querySelectorAll('[data-admin-remove]').forEach(button=>button.addEventListener('click',()=>{delete adminSharedFavorites[button.dataset.adminRemove];renderAdminFavorites();}));
   }
   async function loadAdminFavoriteType(type){
