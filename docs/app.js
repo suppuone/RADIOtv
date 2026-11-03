@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '4.1.0';
+  const APP_VERSION = '4.1.1';
 
   const RADIO_API = [
     'https://de1.api.radio-browser.info/json',
@@ -597,6 +597,8 @@
   $('admin-radio-tab').addEventListener('click',()=>switchAdminFavoriteType('radio'));
   $('admin-list-search').addEventListener('input',filterAdminFavoriteList);
   $('admin-import-local').addEventListener('click',importBrowserFavorites);
+  $('admin-import-json').addEventListener('click',()=>$('admin-json-file').click());
+  $('admin-json-file').addEventListener('change',importAdminJSONFile);
   $('admin-add-channel').addEventListener('click',addAdminFavorite);
   $('admin-save').addEventListener('click',publishAdminFavorites);
   $('admin-disconnect').addEventListener('click',()=>{adminGitHubToken='';adminFavoritesSha='';adminSharedFavorites={};adminFavoriteDrafts.tv=null;adminFavoriteDrafts.radio=null;$('admin-token').value='';$('admin-workspace').hidden=true;$('admin-status').textContent='Disconnected. Your token has been cleared.';});
@@ -784,6 +786,7 @@
     $('admin-list-title').textContent=radio?'Shared radio stations · stream and logo URLs':'Shared TV channels';
     $('admin-list-search').placeholder=radio?'Search all radio stations by name, tag, country, or URL…':'Search all TV channels by name, category, country, or URL…';
     $('admin-import-help').textContent=`Imports ${radio?'radio stations':'TV channels'} saved in this browser. Localhost and the hosted site have separate lists.`;
+    $('admin-json-import-help').textContent=`Imports a ${radio?'radio':'TV'} JSON file. New items are added and missing logos are filled; existing stream URLs and station details are preserved.`;
   }
   function filterAdminFavoriteList(){
     const target=$('admin-favorite-list'),term=$('admin-list-search').value.trim().toLocaleLowerCase(),rows=[...target.querySelectorAll('[data-admin-row]')];let visible=0;
@@ -845,6 +848,40 @@
     });
     captureAdminDraft();renderAdminFavorites();
     $('admin-status').textContent=`Imported ${saved.length} browser ${radio?'radio stations':'TV channels'} (${added} new). Publish the shared list to send them to GitHub.`;
+  }
+  function adminImportedLogo(item){return item?.favicon||item?.logo||item?.image||item?.artwork||'';}
+  function findImportedFavoriteMatch(key,item){
+    const entries=Object.entries(adminSharedFavorites),ids=[item?.stationuuid,key].filter(Boolean).map(String),urls=[item?.url_resolved,item?.url].filter(Boolean).map(String);
+    let match=entries.find(([,current])=>ids.some(id=>id===String(current?.stationuuid||'')));
+    if(!match)match=entries.find(([,current])=>urls.some(url=>url===String(current?.url_resolved||'')||url===String(current?.url||'')));
+    if(match)return match;
+    const name=String(item?.name||'').trim().toLocaleLowerCase(),country=String(item?.country||'').trim().toLocaleLowerCase();
+    if(!name)return null;
+    return entries.find(([,current])=>String(current?.name||'').trim().toLocaleLowerCase()===name&&(!country||!current?.country||String(current.country).trim().toLocaleLowerCase()===country))||null;
+  }
+  async function importAdminJSONFile(event){
+    const input=event.currentTarget,file=input.files?.[0];if(!file)return;
+    const radio=adminFavoriteType==='radio';$('admin-status').textContent=`Reading ${file.name}…`;
+    try{
+      const parsed=JSON.parse(await file.text()),entries=Array.isArray(parsed)?parsed.map((item,index)=>[item?.stationuuid||item?.url||`import-${index}`,item]):parsed&&typeof parsed==='object'?Object.entries(parsed):null;
+      if(!entries)throw new Error('Choose a JSON object or list of stations/channels.');
+      let added=0,logos=0,skipped=0;
+      for(const[rawKey,item]of entries){
+        if(!item||typeof item!=='object'||Array.isArray(item)){skipped++;continue;}
+        const key=String(rawKey||item.stationuuid||item.url_resolved||item.url||item.name||'').trim();if(!key){skipped++;continue;}
+        const matched=findImportedFavoriteMatch(key,item);
+        if(!matched){let uniqueKey=key,suffix=2;while(Object.prototype.hasOwnProperty.call(adminSharedFavorites,uniqueKey))uniqueKey=`${key}#${suffix++}`;adminSharedFavorites[uniqueKey]=item;added++;continue;}
+        const existing=matched[1],incomingLogo=String(adminImportedLogo(item)||'').trim(),currentLogo=String(adminImportedLogo(existing)||'').trim();
+        const genericLogo=/apple-touch-icon|(?:^|\/)favicon\.(?:ico|png)|placeholder/i.test(currentLogo);
+        if(incomingLogo&&(!currentLogo||genericLogo)){
+          if(radio)existing.favicon=incomingLogo;else existing.logo=incomingLogo;
+          logos++;
+        }
+      }
+      captureAdminDraft();renderAdminFavorites();
+      $('admin-status').textContent=`Imported ${added} new ${radio?'stations':'channels'} and filled ${logos} missing logo${logos===1?'':'s'}. Existing stream URLs and station details were preserved${skipped?`; skipped ${skipped} invalid row${skipped===1?'':'s'}`:''}. Click Publish shared list to save these changes to GitHub.`;
+    }catch(error){$('admin-status').textContent=error.message||'Could not read this JSON file.';}
+    finally{input.value='';}
   }
   function addAdminFavorite(){
     const radio=adminFavoriteType==='radio',name=$('admin-channel-name').value.trim(),url=$('admin-channel-url').value.trim(),extra=$('admin-channel-group').value.trim(),logo=$('admin-channel-logo').value.trim();
