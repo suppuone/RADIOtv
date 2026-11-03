@@ -1659,5 +1659,16 @@
     "tags": "",
     "codec": "",
     "bitrate": 0
+  },
+  "https://centova1.dribbcast.com/proxy/vaigaifm/stream": {
+    "stationuuid": "https://centova1.dribbcast.com/proxy/vaigaifm/stream",
+    "name": "VAIGAI FM",
+    "url": "https://centova1.dribbcast.com/proxy/vaigaifm/stream",
+    "url_resolved": "https://centova1.dribbcast.com/proxy/vaigaifm/stream",
+    "country": "INDIA",
+    "favicon": "https://banner2.cleanpng.com/20180818/olg/19ea7c573be450d1e741f79734b94a29.webp",
+    "tags": "",
+    "codec": "",
+    "bitrate": 0
   }
 }
