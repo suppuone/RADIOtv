@@ -363,4 +363,5 @@ html[data-theme="epaper"] .admin-field input{background:#fff;color:#111;border-c
 @media(max-width:760px){.view-toolbar .sort-wrap{flex:1 0 calc(50% - 5px);height:43px}.view-toolbar .sort-wrap select{max-width:none;flex:1}.section-actions{flex-wrap:wrap}.section-actions .sort-wrap{height:31px}}
 @media(max-width:520px){.radio-genre-filters{gap:6px;padding:8px}.radio-genre-filters>span{width:100%}.radio-genre-filters button{flex:1 1 26%;padding:0 10px}}
 @media(max-width:520px){.favorites-mode-tab{gap:7px;padding:9px 8px}.favorites-mode-tab svg{width:26px;height:26px}}
+#radio-favorites-button[hidden],#tv-favorites-button[hidden]{display:none!important}
 

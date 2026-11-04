@@ -437,11 +437,12 @@
       $('cinema-toggle').setAttribute('aria-pressed','false');
     }
     if(view==='tv'){
-      showingTVFavorites=Object.keys(tvFavorites).length>0||!sharedTVFavoritesLoaded;
+      showingTVFavorites=false;
       if(!sharedTVFavoritesLoaded)loadSharedFavorites();
+      if(!tvStations.length&&!tvLoading)loadTV();
     }
     if(view==='radio'){
-      showingRadioFavorites=Object.keys(radioFavorites).length>0;
+      showingRadioFavorites=false;
       if(showingRadioFavorites||radioStations.length)renderRadio();
       else if(!radioLoading)searchRadio();
       else renderRadio();
@@ -453,7 +454,7 @@
     }else stopHomePreview();
     document.querySelectorAll('.side-link').forEach(button=>button.classList.toggle('active',button.dataset.view===view));
     document.querySelectorAll('.view-panel').forEach(panel => panel.classList.toggle('active', panel.id === `${view}-view`));
-    const titles={home:'Your media, in one place',radio:'World Radio',tv:'Live TV',recent:'Recently played',favorites:'Your favorites',news:'News & magazines'};
+    const titles={home:'Your media, in one place',radio:'World Radio',tv:'Live TV',recent:'Recently played',favorites:'Top Picks',news:'News & magazines'};
     const pageIcons={
       radio:'<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="m6 5 12-3M7 12h.01M7 16h.01m4-4h6m-6 4h6"/></svg>',
       tv:'<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="m8 22 4-4 4 4M8 10h8"/></svg>',
@@ -482,7 +483,7 @@
   }
   function commandItems(query=''){
     const items=[];const add=(title,detail,type,action,id)=>items.push({title,detail,type,action,id});
-    const pages=[['Home','Dashboard','home'],['Live TV','Watch live television','tv'],['Radio','Browse internet radio','radio'],['Recently played','Your listening history','recent'],['Favorites','Saved stations and channels','favorites'],['News & Magazines','Open news publishers','news']];
+    const pages=[['Home','Dashboard','home'],['Live TV','Watch live television','tv'],['Radio','Browse internet radio','radio'],['Recently played','Your listening history','recent'],['Top Picks','Saved stations and channels','favorites'],['News & Magazines','Open news publishers','news']];
     pages.forEach(([title,detail,view])=>add(title,detail,'page',()=>setView(view),view));
     const known=new Set();
     [...Object.values(radioFavorites),...radioStations].forEach(station=>{if(!station)return;const key=`radio:${radioKey(station)}`;if(known.has(key))return;known.add(key);add(station.name||'Radio station',`${station.country||'Radio'}${radioFavorites[radioKey(station)]?' · Favorite':''}`,'radio',()=>{setView('radio');playRadio(station);},key);});
@@ -728,9 +729,7 @@
       }));
       repairFavoriteStores();
       updateFavoriteCounts();
-      if(currentView==='radio'&&!radioFilterTouched&&Object.keys(radioFavorites).length)showingRadioFavorites=true;
       if(showingRadioFavorites)renderRadio();
-      if(!tvFilterTouched)showingTVFavorites=Object.keys(tvFavorites).length>0;
       if(showingTVFavorites||$('tv-view').classList.contains('active'))renderTV();
       renderHomeRadio();renderHomeTV();renderFavorites();
       if(currentView==='home')startHomePreview();
