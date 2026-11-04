@@ -364,4 +364,7 @@ html[data-theme="epaper"] .admin-field input{background:#fff;color:#111;border-c
 @media(max-width:520px){.radio-genre-filters{gap:6px;padding:8px}.radio-genre-filters>span{width:100%}.radio-genre-filters button{flex:1 1 26%;padding:0 10px}}
 @media(max-width:520px){.favorites-mode-tab{gap:7px;padding:9px 8px}.favorites-mode-tab svg{width:26px;height:26px}}
 #radio-favorites-button[hidden],#tv-favorites-button[hidden]{display:none!important}
+.tv-layout .video-stage{max-height:52vh}
+@media(max-width:760px){.tv-layout .video-stage{height:min(42dvh,300px);max-height:42dvh;aspect-ratio:auto}}
+@media(max-width:760px) and (orientation:landscape){.tv-layout .video-stage{height:50vh;max-height:50vh;aspect-ratio:auto}}
 

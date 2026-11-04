@@ -438,14 +438,14 @@
     }
     if(view==='tv'){
       showingTVFavorites=false;
+      showingTVTopPicks=true;
       if(!sharedTVFavoritesLoaded)loadSharedFavorites();
-      if(!tvStations.length&&!tvLoading)loadTV();
+      renderTV();
     }
     if(view==='radio'){
       showingRadioFavorites=false;
-      if(showingRadioFavorites||radioStations.length)renderRadio();
-      else if(!radioLoading)searchRadio();
-      else renderRadio();
+      showingRadioTopPicks=true;
+      renderRadio();
     }
     if(view==='home'){
       if(currentTV)stopTV();
