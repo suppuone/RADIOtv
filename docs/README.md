@@ -4,12 +4,12 @@ This is the GitHub Pages version of COOLmagRaTv. The app combines internet radio
 
 ## Version 4 change: shared radio and TV favorites
 
-Open **Settings → Shared favorites → Admin**. Connect with a GitHub fine-grained token that has **Contents: Read and write** access to the `suppuone/RADIOtv` repository. Choose **TV channels** or **Radio stations** to edit the corresponding public list:
+Open **Settings → Shared station & channel library → Open Admin Panel**. The standalone admin page opens in a new browser tab. Connect with a GitHub fine-grained token limited to `suppuone/RADIOtv` and **Contents: Read and write** permission. Choose **TV channels** or **Radio stations** to manage the corresponding public list:
 
 - TV favorites: `surak_home_tv_favorites.json`
 - Radio favorites: `map_favorites.json`
 
-The two lists publish independently, so editing one does not overwrite the other. The **Import browser favorites** button imports favorites from the current site origin; localhost and GitHub Pages keep separate browser storage. Use **Publish shared list** to write the selected list to the repository. Visitors receive shared additions or edits when the app refreshes.
+The two lists publish independently, so editing one does not overwrite the other. In the admin tab you can add entries, edit names, countries, categories, stream and logo URLs, remove entries, search, import browser favorites or JSON, and download a JSON backup. Use **Publish shared list** to write the selected list to the repository. Your token is held only in that tab's memory and cleared when you disconnect or close the tab. Visitors receive shared additions or edits when the app refreshes.
 
 ## Features
 

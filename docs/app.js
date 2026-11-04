@@ -941,7 +941,13 @@
     }catch(error){status.textContent=error.message||'Could not publish the shared list.';}
     finally{button.disabled=false;button.textContent='Publish shared list';}
   }
-  function openAdminFavorites(){closeSettings();$('admin-overlay').hidden=false;document.body.classList.add('admin-open');$('admin-token').focus();}
+  function openAdminFavorites(){
+    closeSettings();
+    const adminURL=new URL('admin.html',window.location.href);
+    const tab=window.open(adminURL.href,'_blank');
+    if(tab)tab.opener=null;
+    if(!tab)toast('Your browser blocked the new tab. Allow pop-ups for this site, then try again.');
+  }
   function closeAdminFavorites(){
     $('admin-overlay').hidden=true;document.body.classList.remove('admin-open');
   }
