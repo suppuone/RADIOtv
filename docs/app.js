@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const APP_VERSION = '4.1.1';
+  const APP_VERSION = '4.1.2';
 
   const RADIO_API = [
     'https://de1.api.radio-browser.info/json',
@@ -175,13 +175,44 @@
   };
   const radioFavorites = readStore('coolmag.radio.favorites.v1');
   const tvFavorites = readStore('coolmag.tv.favorites.v1');
+  // Repair entries saved to the wrong browser favorites store by older app builds.
+  // Move only records with clear radio or TV metadata; preserve uncertain rows.
+  function isRadioFavoriteEntry(item) {
+    return Boolean(item && (item.stationuuid || item.url_resolved || item.favicon || item.codec || item.bitrate || item.tags));
+  }
+  function isTVFavoriteEntry(item) {
+    return Boolean(item && (item.group || Array.isArray(item.options) || (item.logo && !isRadioFavoriteEntry(item))));
+  }
+  function repairFavoriteStores() {
+    let movedRadio = 0, movedTV = 0;
+    for (const [key, item] of Object.entries(radioFavorites)) {
+      if (!isRadioFavoriteEntry(item) && isTVFavoriteEntry(item)) {
+        let targetKey = item.url || key, suffix = 2;
+        while (tvFavorites[targetKey] && tvFavorites[targetKey].url !== item.url) targetKey = `${item.url || key}#${suffix++}`;
+        if (!tvFavorites[targetKey]) tvFavorites[targetKey] = item;
+        delete radioFavorites[key]; movedTV++;
+      }
+    }
+    for (const [key, item] of Object.entries(tvFavorites)) {
+      if (isRadioFavoriteEntry(item) && !isTVFavoriteEntry(item)) {
+        const baseKey = item.stationuuid || item.url_resolved || item.url || key;
+        let targetKey = baseKey, suffix = 2;
+        while (radioFavorites[targetKey] && radioFavorites[targetKey].url !== item.url) targetKey = `${baseKey}#${suffix++}`;
+        if (!radioFavorites[targetKey]) radioFavorites[targetKey] = item;
+        delete tvFavorites[key]; movedRadio++;
+      }
+    }
+    if (movedRadio) persist('coolmag.radio.favorites.v1', radioFavorites);
+    if (movedTV) persist('coolmag.tv.favorites.v1', tvFavorites);
+  }
   const savedSort=readStore('coolmag.list.sort.v1');
   let radioSortMode=['name','genre'].includes(savedSort.radio)?savedSort.radio:'name';
   let tvSortMode=['name','genre'].includes(savedSort.tv)?savedSort.tv:'name';
   const readRecent = key => { try { const value=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(value)?value.filter(item=>item&&typeof item==='object'):[]; } catch { return []; } };
   const recentHistory = {radio:readRecent('coolmag.recent.radio.v1'),tv:readRecent('coolmag.recent.tv.v1')};
-  showingTVFavorites = Object.keys(tvFavorites).length > 0;
   const persist = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch { toast('This browser could not save favorites.'); } };
+  repairFavoriteStores();
+  showingTVFavorites = Object.keys(tvFavorites).length > 0;
   const toast = (message) => {
     const node = $('toast'); node.textContent = message; node.classList.add('show');
     clearTimeout(toastTimer); toastTimer = setTimeout(() => node.classList.remove('show'), 2600);
@@ -693,6 +724,7 @@
           }catch{/* Retry through the alternate public mirror. */}
         }
       }));
+      repairFavoriteStores();
       updateFavoriteCounts();
       if(currentView==='radio'&&!radioFilterTouched&&Object.keys(radioFavorites).length)showingRadioFavorites=true;
       if(showingRadioFavorites)renderRadio();
@@ -924,7 +956,7 @@
   }
   function renderRadio() {
     const target = $('radio-stations');
-    const source=showingRadioTopPicks?CURATED_RADIO:showingRadioFavorites?Object.values(radioFavorites):radioStations;
+    const source=showingRadioTopPicks?CURATED_RADIO:showingRadioFavorites?Object.values(radioFavorites).filter(item=>!isTVFavoriteEntry(item)||isRadioFavoriteEntry(item)):radioStations;
     const genreRows=radioGenreFilter==='all'?source:source.filter(station=>classifyRadioGenre(station)===radioGenreFilter);
     const rows=(showingRadioTopPicks?genreRows:sortStationRows(genreRows,radioSortMode,'radio')).slice(0,100);
     const genreName={all:'',music:' · Music',news:' · News',talks:' · Talks',others:' · Others'}[radioGenreFilter]||'';
@@ -989,7 +1021,7 @@
   }
   function renderFavorites() {
     const radioTarget=$('favorite-radio-grid'),tvTarget=$('favorite-tv-grid');if(!radioTarget||!tvTarget)return;
-    const radios=sortStationRows(Object.values(radioFavorites),radioSortMode,'radio'),tvs=sortStationRows(Object.values(tvFavorites),tvSortMode,'tv');
+    const radios=sortStationRows(Object.values(radioFavorites).filter(item=>!isTVFavoriteEntry(item)||isRadioFavoriteEntry(item)),radioSortMode,'radio'),tvs=sortStationRows(Object.values(tvFavorites).filter(item=>!isRadioFavoriteEntry(item)||isTVFavoriteEntry(item)),tvSortMode,'tv');
     $('favorites-radio-count').textContent=String(radios.length);$('favorites-tv-count').textContent=String(tvs.length);
     radioTarget.innerHTML=radios.length?radios.map(station=>`<article class="favorite-row" data-fav-radio="${safe(radioKey(station))}"><span>♫</span><div><b>${safe(station.name||'Radio station')}</b><small>${safe(station.country||'Internet radio')}</small></div><button class="tile-star is-favorite" data-fav-radio-remove="${safe(radioKey(station))}" aria-label="Remove favorite">★</button></article>`).join(''):'<div class="empty-state">No radio favorites saved yet.</div>';
     tvTarget.innerHTML=tvs.length?tvs.map(station=>`<article class="favorite-row" data-fav-tv="${safe(station.url)}"><span>▣</span><div><b>${safe(station.name||'TV channel')}</b><small>${safe(station.group||'Live television')}</small></div><button class="tile-star is-favorite" data-fav-tv-remove="${safe(station.url)}" aria-label="Remove favorite">★</button></article>`).join(''):'<div class="empty-state">No TV favorites saved yet.</div>';
@@ -1176,7 +1208,7 @@
   }
   function filteredTV() {
     if(showingTVTopPicks)return CURATED_TV;
-    const rows=showingTVFavorites?Object.values(tvFavorites):tvStations;
+    const rows=showingTVFavorites?Object.values(tvFavorites).filter(item=>!isRadioFavoriteEntry(item)||isTVFavoriteEntry(item)):tvStations;
     return showingTVFavorites?rows:rows.slice(0,120);
   }
   function renderTV() {
