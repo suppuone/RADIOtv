@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f1117">
+  <meta name="robots" content="noindex,nofollow">
+  <title>COOLmagRaTv · Admin Library</title>
+  <link rel="stylesheet" href="admin.css?v=1.0.0">
+  <script defer src="admin.js?v=1.0.0"></script>
+</head>
+<body>
+  <main class="admin-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Back to COOLmagRaTv"><span class="brand-mark">◉</span><span><b>COOLmagRaTv</b><small>ADMIN LIBRARY</small></span></a>
+      <a class="back-link" href="./">← Back to media centre</a>
+    </header>
+
+    <section class="intro-card">
+      <span class="eyebrow">PUBLIC LIBRARY MANAGER</span>
+      <h1>Radio &amp; TV Admin</h1>
+      <p>Manage the shared stations and channels shown to everyone. Your GitHub token stays in this tab’s memory and is cleared when you disconnect or close the tab.</p>
+    </section>
+
+    <section class="connect-card" aria-labelledby="connect-heading">
+      <div class="section-title"><div><span class="eyebrow">STEP 1 · CONNECT</span><h2 id="connect-heading">Connect to GitHub</h2></div><span class="repo-pill">suppuone / RADIOtv</span></div>
+      <p class="help">Use a fine-grained token limited to this repository with <b>Contents: Read and write</b> access. The token is sent directly from this browser to GitHub; it is not saved in browser storage.</p>
+      <div class="connect-row"><label class="field token-field"><span>GitHub token</span><input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your fine-grained token"></label><button class="button primary" id="connect" type="button">Connect &amp; load lists</button></div>
+      <p class="status" id="status" role="status" aria-live="polite">Not connected.</p>
+    </section>
+
+    <section class="workspace" id="workspace" hidden>
+      <div class="workspace-heading"><div><span class="eyebrow">STEP 2 · MANAGE</span><h2>Shared content</h2></div><div class="session-actions"><span class="connected-pill"><i></i> Connected for this tab</span><button class="button ghost" id="disconnect" type="button">Disconnect</button></div></div>
+
+      <div class="media-tabs" role="tablist" aria-label="Choose shared list">
+        <button class="media-tab active" id="radio-tab" type="button" role="tab" aria-selected="true"><span aria-hidden="true">♫</span> Radio stations <b id="radio-count">0</b></button>
+        <button class="media-tab" id="tv-tab" type="button" role="tab" aria-selected="false"><span aria-hidden="true">▣</span> TV channels <b id="tv-count">0</b></button>
+      </div>
+
+      <section class="add-card" aria-labelledby="add-heading">
+        <div class="section-title"><div><span class="eyebrow">ADD TO SHARED LIST</span><h3 id="add-heading">Add radio station</h3></div></div>
+        <div class="form-grid">
+          <label class="field"><span id="name-label">Station name</span><input id="new-name" type="text" placeholder="Station name"></label>
+          <label class="field"><span>Stream URL</span><input id="new-url" type="url" placeholder="https://…"></label>
+          <label class="field"><span id="country-label">Country</span><input id="new-country" type="text" placeholder="Country"></label>
+          <label class="field"><span id="category-label">Genre / tags</span><input id="new-category" type="text" placeholder="Music, News, Talk"></label>
+          <label class="field"><span>Logo image URL</span><input id="new-logo" type="url" placeholder="https://… (optional)"></label>
+        </div>
+        <button class="button ghost" id="add-item" type="button">＋ Add station</button>
+      </section>
+
+      <section class="list-card" aria-labelledby="list-heading">
+        <div class="list-heading"><div><span class="eyebrow">EDIT · ADD · REMOVE</span><h3 id="list-heading">Radio stations</h3></div><span id="visible-count" class="item-count">0 items</span></div>
+        <div class="list-tools"><label class="field search-field"><span>Search name, country, category, URL or logo</span><input id="search" type="search" placeholder="Search this shared list…"></label><div class="tool-buttons"><button class="button ghost" id="import-browser" type="button">Import this browser</button><button class="button ghost" id="import-json" type="button">Import JSON</button><input id="json-file" type="file" accept=".json,application/json" hidden><button class="button ghost" id="export-json" type="button">Download backup</button></div></div>
+        <p class="help compact">Edit fields directly in each card. Changes stay as a draft in this tab until you publish. Importing JSON merges entries; it does not delete existing entries.</p>
+        <div class="item-list" id="item-list"></div>
+      </section>
+
+      <footer class="publish-bar"><div><b id="draft-label">No unpublished changes</b><small id="publish-note">Choose a list, make changes, then publish to GitHub.</small></div><button class="button primary publish-button" id="publish" type="button" disabled>Publish shared list</button></footer>
+    </section>
+
+    <footer class="page-footer">Changes publish to the shared JSON list in the RADIOtv repository. App users receive updates when the list is refreshed.</footer>
+  </main>
+</body>
+</html>
