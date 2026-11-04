@@ -178,10 +178,12 @@
   // Repair entries saved to the wrong browser favorites store by older app builds.
   // Move only records with clear radio or TV metadata; preserve uncertain rows.
   function isRadioFavoriteEntry(item) {
-    return Boolean(item && (item.stationuuid || item.url_resolved || item.favicon || item.codec || item.bitrate || item.tags));
+    if (!item) return false;
+    const name=String(item.name||'').trim();
+    return Boolean(item.stationuuid || item.url_resolved || item.favicon || item.codec || item.bitrate || item.tags || /\b(?:radio|fm)\b|akashvani|all india radio|\bair\b|\b987\b/i.test(name));
   }
   function isTVFavoriteEntry(item) {
-    return Boolean(item && (item.group || Array.isArray(item.options) || (item.logo && !isRadioFavoriteEntry(item))));
+    return Boolean(item && !isRadioFavoriteEntry(item) && (item.group || item.logo || Array.isArray(item.options)));
   }
   function repairFavoriteStores() {
     let movedRadio = 0, movedTV = 0;
@@ -1208,7 +1210,7 @@
   }
   function filteredTV() {
     if(showingTVTopPicks)return CURATED_TV;
-    const rows=showingTVFavorites?Object.values(tvFavorites).filter(item=>!isRadioFavoriteEntry(item)||isTVFavoriteEntry(item)):tvStations;
+    const rows=showingTVFavorites?Object.values(tvFavorites).filter(item=>!isRadioFavoriteEntry(item)):tvStations.filter(item=>!isRadioFavoriteEntry(item));
     return showingTVFavorites?rows:rows.slice(0,120);
   }
   function renderTV() {
