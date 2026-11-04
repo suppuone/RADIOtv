@@ -1212,6 +1212,24 @@
     const rows=showingTVFavorites?Object.values(tvFavorites).filter(item=>!isRadioFavoriteEntry(item)):tvStations.filter(item=>!isRadioFavoriteEntry(item));
     return showingTVFavorites?rows:rows.slice(0,120);
   }
+  function renderTVScreenRail(rows){
+    const rail=$('tv-screen-rail'),track=$('tv-screen-track');if(!rail||!track)return;
+    if(!track.dataset.mouseDragReady){
+      let dragState=null;
+      track.addEventListener('pointerdown',event=>{if(event.pointerType!=='mouse'||event.button!==0)return;dragState={id:event.pointerId,x:event.clientX,scroll:track.scrollLeft,moved:false};track.setPointerCapture(event.pointerId);track.classList.add('is-dragging');});
+      track.addEventListener('pointermove',event=>{if(!dragState||event.pointerId!==dragState.id)return;const delta=event.clientX-dragState.x;if(Math.abs(delta)>4)dragState.moved=true;if(dragState.moved){track.scrollLeft=dragState.scroll-delta;event.preventDefault();}});
+      const finishDrag=event=>{if(!dragState||event.pointerId!==dragState.id)return;if(dragState.moved){track.dataset.dragged='true';setTimeout(()=>delete track.dataset.dragged,120);}if(track.hasPointerCapture(event.pointerId))track.releasePointerCapture(event.pointerId);dragState=null;track.classList.remove('is-dragging');};
+      track.addEventListener('pointerup',finishDrag);track.addEventListener('pointercancel',finishDrag);
+      track.addEventListener('click',event=>{if(track.dataset.dragged==='true'){event.preventDefault();event.stopPropagation();delete track.dataset.dragged;}},true);
+      track.dataset.mouseDragReady='true';
+    }
+    if(!rows.length){rail.hidden=true;track.innerHTML='';return;}
+    rail.hidden=false;
+    track.innerHTML=rows.slice(0,40).map(row=>`<button class="tv-rail-card ${currentTV?.url===row.url?'is-playing':''}" type="button" data-tv-rail-url="${safe(row.url)}" aria-pressed="${currentTV?.url===row.url?'true':'false'}"><span class="tv-rail-art">${row.logo?`<img src="${safe(row.logo)}" loading="lazy" alt="">`:'<b>TV</b>'}</span><span class="tv-rail-copy"><b>${safe(row.name||'TV channel')}</b><small>${safe(row.country||row.group||'Live TV')}</small></span></button>`).join('');
+    track.querySelectorAll('[data-tv-rail-url]').forEach(card=>card.addEventListener('click',()=>{const station=rows.find(row=>row.url===card.dataset.tvRailUrl);if(station)playTV(station);}));
+    const active=track.querySelector('.tv-rail-card.is-playing');
+    if(active)track.scrollTo({left:Math.max(0,active.offsetLeft-(track.clientWidth-active.offsetWidth)/2),behavior:'smooth'});
+  }
   function renderTV() {
     const available=filteredTV();const rows=showingTVTopPicks?available:sortStationRows(available,tvSortMode,'tv');const list=$('tv-channels');
     const favoritesFirst=showingTVFavorites;
@@ -1222,6 +1240,7 @@
     $('tv-favorites-button').innerHTML=`${showingTVFavorites?'★ Your favorites':'♡ Favorites'} <span class="count-pill" id="tv-favorite-count">${Object.keys(tvFavorites).length}</span>`;
     $('tv-list-eyebrow').textContent=showingTVTopPicks?'CURATED TOP PICKS':showingTVFavorites?'YOUR TV FAVORITES':'CHANNEL GUIDE';
     $('tv-list-title').textContent=showingTVTopPicks?'Recommended channels':showingTVFavorites?'Favorite channels':'Live TV';
+    renderTVScreenRail(rows);
     if(!rows.length){list.innerHTML=showingTVTopPicks?'<div class="empty-state">The curated channel list is empty.</div>':showingTVFavorites?`<div class="empty-state">${sharedTVFavoritesLoaded?'No TV favorites saved yet. Star channels to keep them here.':'Loading your saved TV favorites…'}</div>`:'<div class="empty-state">No matching channels. Choose a playlist or adjust your search.</div>';renderHomeTV();renderFavorites();return;}
     list.innerHTML=rows.map(row=>`<article class="home-channel tv-channel ${currentTV&&currentTV.url===row.url?'active':''}" data-tv-url="${safe(row.url)}" tabindex="0" role="button"><div class="channel-art">${row.logo?`<img src="${safe(row.logo)}" loading="lazy" alt="" onerror="this.style.display='none'">`:'<span>▣</span>'}<i class="media-badge media-badge-tv" aria-label="TV live" title="TV live"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="m8 3 4 3 4-3M8 11h8M8 15h5"/></svg></i></div><button class="tile-star ${tvFavorites[tvKey(row)]?'is-favorite':''}" data-tv-star="${safe(row.url)}" aria-label="Toggle favorite">${tvFavorites[tvKey(row)]?'★':'☆'}</button><b>${safe(row.name)}</b><small>${safe(row.group||'Live television')}</small></article>`).join('');
     list.querySelectorAll('.tv-channel').forEach(item=>{const row=rows.find(candidate=>candidate.url===item.dataset.tvUrl);item.addEventListener('click',event=>{if(event.target.closest('[data-tv-star]'))return;playTV(row);});item.addEventListener('keydown',event=>{if(event.key==='Enter'){playTV(row);}});});
@@ -1275,6 +1294,7 @@
   $('tv-country-select').addEventListener('change',loadTV);
   $('tv-sort-select').value=tvSortMode;
   $('tv-sort-select').addEventListener('change',()=>{tvSortMode=$('tv-sort-select').value;persist('coolmag.list.sort.v1',{radio:radioSortMode,tv:tvSortMode});renderTV();renderFavorites();});
+  document.querySelectorAll('[data-tv-rail-scroll]').forEach(button=>button.addEventListener('click',()=>{$('tv-screen-track')?.scrollBy({left:Number(button.dataset.tvRailScroll)*230,behavior:'smooth'});}));
   $('tv-fullscreen').addEventListener('click',toggleTVFullView);
   $('tv-full-home').addEventListener('click',()=>{
     if(currentTV)stopTV();
